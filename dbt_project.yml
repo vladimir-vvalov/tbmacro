@@ -3,10 +3,12 @@
 # and underscores. A good package name should reflect your organization's
 # name or the intended use of these models
 name: 'tbmacro'
-version: '0.3.0'
+version: '0.4.0'
 config-version: 2
 
 require-dbt-version: [">=1.8.0", "<2.0.0"]
+
+# profile: "tbmacro"
 
 # These configurations specify where dbt should look for different types of files.
 # The `model-paths` config, for example, states that models in this project can be

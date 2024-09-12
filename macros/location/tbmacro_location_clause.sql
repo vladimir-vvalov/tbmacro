@@ -1,5 +1,6 @@
 {#-- Custom location_clause using custom config 'bucket_root' --#}
 {#-- Call it in overloaded macro 'spark__location_clause' like example below --#}
+{#-- It is mandatory to correct working materialization 'tbm_incremental' with config tbm_contract=true  --#}
 {#
   {% macro spark__location_clause() %}
     {{ tbmacro.tbmacro_location_clause() }}
