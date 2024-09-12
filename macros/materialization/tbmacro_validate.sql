@@ -67,18 +67,6 @@
     Not defined merge conditions
     Set one or more configs of: 'unique_key', 'incremental_predicates', 'tbm_filter_key'
   {%- endset %}
-  {% set invalid_preset_merge_small_table_msg -%}
-    tbm_incremental error
-    Error in preset: {{ raw_strategy }}
-    Mandatory parameters: 'unique_key'
-    Unallowed parameters: 'partition_by'
-    Forced config:
-      tbm_filter_mode = none,
-      incremental_predicates = none,
-      tbm_update_changes_only = true,
-      tbm_merge_operator = 'delete',
-      exclude_check_columns = ['modified_at'] (if include_check_columns and exclude_check_columns not defined)
-  {%- endset %}
 
   {#-- processing some raw parametes --#}
   {%- set key = [] -%}
@@ -178,19 +166,6 @@
     {{ exceptions.raise_compiler_error(invalid_merge_condition_msg)}}
   {%- endif -%}
 
-  {#-- presets --#}
-  {%- if strategy == 'preset_merge_small_table' -%}
-    {%- if unique_key is none or partition_by is not none-%}
-      {% do exceptions.raise_compiler_error(invalid_preset_merge_small_table_msg) %}
-    {%- else -%}
-      {%- set mode = none -%}
-      {%- set incremental_predicates = none -%}
-      {%- set update_changes_only = true -%}
-      {%- set operator = 'delete' -%}
-      {%- set exclude_check_columns = ['modified_at'] if include_check_columns is none and exclude_check_columns is none -%}
-    {%- endif -%}
-  {%- endif -%}
-
   {#-- make result dictionary --#}
   {%- set return_dict = {
     'file_format': file_format,
@@ -246,7 +221,7 @@
 {% macro tbmacro_validate_strategy(raw_strategy, file_format) -%}
   {#-- Validate the incremental strategy --#}
 
-  {%- set accepted_strategies = ['append', 'merge', 'insert_overwrite', 'delete+insert', 'preset_merge_small_table'] -%}
+  {%- set accepted_strategies = ['append', 'merge', 'insert_overwrite', 'delete+insert'] -%}
 
   {% set invalid_strategy_msg -%}
     tbm_incremental error

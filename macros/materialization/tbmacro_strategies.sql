@@ -7,7 +7,7 @@
   {%- elif strategy == 'insert_overwrite' -%}
     {#-- insert or overwrite all partitions existing in selection --#}
     {{ get_insert_overwrite_sql(source, target, existing) }}
-  {%- elif strategy in ['merge', 'preset_merge_small_table'] -%}
+  {%- elif strategy in ['merge'] -%}
     {#-- check for update using config 'tbm_update_changes_only' --#}
     {%- set check_update_changes_only = tbmacro.tbmacro_check_update_changes_only(target, source, tbm_config) -%}
     {%- if check_update_changes_only == false -%}
