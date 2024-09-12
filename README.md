@@ -11,4 +11,3 @@ macros for custom materialization 'tbm_incremental'
 ### location
 custom location configurated by 'bucket_root'
 also mandatory in materialization 'tbm_incremental'
-test
