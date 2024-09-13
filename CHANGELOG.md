@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.1 - (2024-09-12)
+---
+
+### Fix
+* removed location macros
+* fix getting location path
+
 ## 0.4.0 - (2024-09-12)
 ---
 

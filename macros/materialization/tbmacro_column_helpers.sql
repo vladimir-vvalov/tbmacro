@@ -83,6 +83,7 @@
 {% macro tbmacro_surrogate_key(key=[], alias='') -%}
   {#-- Make surrogate key --#}
   {%- set quoted_list = [] -%}
+  {%- set alias = '' if alias is none else alias -%}
   {%- set return_value = '' -%}
   {%- if key -%}
     {%- for item in key -%}
@@ -97,7 +98,7 @@
 {% macro tbmacro_surrogate_key_alias(key=[]) -%}
   {#-- Make alias for surrogate key --#}
   {% set return_value = '' %}
-  {%- if key -%}
+  {%- if key and key is not none -%}
     {% set return_value = '_dbt__tbmacro_key_'~(key[0] if key | count() == 1 else key | join("_")) %}
   {%- endif -%}
   {{ return('`'~return_value~'`') }}
