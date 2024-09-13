@@ -48,11 +48,13 @@
         {#-- Drop view --#}
         {% do adapter.drop_relation(existing_relation) %}
       {%- endif -%}
-      {%- if existing_relation.is_view or existing_relation is none -%}
-        {%- if tbmacro.tbmacro_get_existing_location(file_format, tbmacro.tbmacro_location()) == true -%}
+      {%- if (existing_relation.is_view or existing_relation is none) and location_clause() and location_clause() is not none -%}
+        {#-- Get location path --#}
+        {% set location_path = ((location_clause() | trim) | replace("location ", "")).strip("\'") %}
+        {%- if tbmacro.tbmacro_get_existing_location(file_format, location_path) == true -%}
           {#-- Restore table because location exists --#}
           {%- call statement('tbmacro_restore_relation', language=language) -%}
-            {{ tbmacro.tbmacro_restore_relation(target_relation, tbmacro.tbmacro_location()) }}
+            {{ tbmacro.tbmacro_restore_relation(target_relation, location_path) }}
           {%- endcall -%}
           {{ log("(tbm_incremental) Incremental relation was restored") }}
         {%- endif -%}
