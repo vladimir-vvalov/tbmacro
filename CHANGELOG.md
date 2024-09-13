@@ -2,12 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.4.1 - (2024-09-12)
+## 0.4.2 - (2024-09-13)
 ---
 
 ### Fix
 * removed location macros
 * fix getting location path
+* add preconditions to check none value before using string filters
 
 ## 0.4.0 - (2024-09-12)
 ---
