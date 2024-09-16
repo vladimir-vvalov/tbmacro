@@ -22,7 +22,7 @@
   {%- set raw_key = config.get('tbm_filter_key', none) or none -%}
   {%- set from = config.get('tbm_filter_from', none) or none -%}
   {%- set till = config.get('tbm_filter_till', none) or none -%}
-  {%- set quote_columns = config.get('tbm_filter_quote_columns', none) or true -%}
+  {%- set quote_values = config.get('tbm_filter_quote_values') or true -%}
 
   {#-- tbm merge --#}
   {%- set update_changes_only = config.get('tbm_update_changes_only') or false -%}
@@ -186,7 +186,7 @@
     'key': key,
     'from': from,
     'till': till,
-    'quote_columns': quote_columns,
+    'quote_values': quote_values,
 
     'update_changes_only': update_changes_only,
     'operator': operator,

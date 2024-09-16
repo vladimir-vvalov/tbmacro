@@ -7,8 +7,8 @@
     {%- set sql = "" -%}
   {%- else -%}
     {%- if tbm_config.mode == 'range' -%}
-      {%- set from = "and "~key~" >= "~tbmacro.tbmacro_quote(tbm_config.from, tbm_config.quote_columns) if tbm_config.from else "" -%}
-      {%- set till = "and "~key~" <= "~tbmacro.tbmacro_quote(tbm_config.till, tbm_config.quote_columns) if tbm_config.till else "" -%}
+      {%- set from = "and "~key~" >= "~tbm_config.from if tbm_config.from and tbm_config.from is not none else "" -%}
+      {%- set till = "and "~key~" <= "~tbm_config.till if tbm_config.till and tbm_config.till is not none else "" -%}
       {%- set sql = from~" "~till -%}
     {%- else -%}
       {%- set values_list = tbmacro.tbmacro_values_filter_key(relation, tbm_config.key) -%}
@@ -17,13 +17,13 @@
           {%- set sql -%}
           and {{ key }} in (
             {%- for item in values_list -%}
-            {{ tbmacro.tbmacro_quote(item, tbm_config.quote_columns) }}{{ "," if not loop.last }}
+            {{ tbmacro.tbmacro_quote(item, tbm_config.quote_values) }}{{ "," if not loop.last }}
             {%- endfor -%}
           )
           {%- endset -%}
         {%- else -%}
-          {%- set from = "and "~key~" >= "~(tbmacro.tbmacro_quote(tbm_config.from, tbm_config.quote_columns) if tbm_config.from else tbmacro.tbmacro_quote(values_list|first(), tbm_config.quote_columns)) -%}
-          {%- set till = "and "~key~" <= "~(tbmacro.tbmacro_quote(tbm_config.till, tbm_config.quote_columns) if tbm_config.till else tbmacro.tbmacro_quote(values_list|last(), tbm_config.quote_columns)) -%}
+          {%- set from = "and "~key~" >= "~(tbm_config.from if tbm_config.from and tbm_config.from is not none else tbmacro.tbmacro_quote(values_list|first(), tbm_config.quote_values)) -%}
+          {%- set till = "and "~key~" <= "~(tbm_config.till if tbm_config.till and tbm_config.till is not none else tbmacro.tbmacro_quote(values_list|last(), tbm_config.quote_values)) -%}
           {%- set sql = from~" "~till -%}
         {%- endif -%}
       {%- endif -%}
@@ -47,7 +47,7 @@
     {%- set sql -%}
     and {{ key }} in (
       {%- for item in values_list -%}
-      {{ tbmacro.tbmacro_quote(item, tbm_config.quote_columns) }}{{ "," if not loop.last }}
+      {{ tbmacro.tbmacro_quote(item, tbm_config.quote_values) }}{{ "," if not loop.last }}
       {%- endfor -%}
     )
     {%- endset -%}
@@ -105,9 +105,9 @@
 {%- endmacro %}
 
 
-{% macro tbmacro_quote(value, quote_columns = true) -%}
+{% macro tbmacro_quote(value, quote_values = true) -%}
   {#-- Quote value --#}
-  {%- set return_value = "'"~value~"'" if quote_columns == true else value -%}
+  {%- set return_value = "'"~value~"'" if quote_values == true else value -%}
   {{ return(return_value) }}
 {%- endmacro %}
 

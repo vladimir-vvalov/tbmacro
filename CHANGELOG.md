@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.3 - (2024-09-16)
+---
+
+### Fix
+* rename parameter 'tbm_filter_quote_columns' to 'tbm_filter_quote_values'
+* remove quoting for 'tbm_filter_from' and 'tbm_filter_till'
+
 ## 0.4.2 - (2024-09-13)
 ---
 
