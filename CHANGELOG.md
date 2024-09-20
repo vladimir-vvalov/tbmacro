@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.4 - (2024-09-16)
+---
+
+### Fix
+* fix insert_overwrite bug with tbm_config.mode is not none
+
 ## 0.4.3 - (2024-09-16)
 ---
 

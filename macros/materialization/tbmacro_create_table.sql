@@ -115,17 +115,33 @@
 
 {% macro tbmacro_create_insert_overwrite_as(tmp_relation, target_relation, tmp_insert_overwrite_relation, filter, filter_partition_by) -%}
   {#-- Get sql code with union model selection and other partitions part according to tbm_filter_* configurations --#}
+  {%- set empty_columns = [] -%}
+  {%- set empty_columns_csv = '' -%}
   {%- set dest_columns = adapter.get_columns_in_relation(tmp_relation) -%}
   {%- set dest_cols_csv = dest_columns | map(attribute='quoted') | join(', ') -%}
+
+  {%- if not filter -%}
+    {#-- create empty query --#}
+    {%- for item in dest_columns -%}
+      {{ log('(xepak) '~item.quoted) }}
+      {%- do empty_columns.append('null as '~item.quoted) -%}
+    {%- endfor -%}
+    {%- set empty_columns_csv = empty_columns | join(', ') -%}
+  {%- endif -%}
   create or replace temporary view {{ tmp_insert_overwrite_relation }} as (
-    select {{dest_cols_csv}}
+    {% if filter -%}
+    select {{ dest_cols_csv }}
     from {{ tmp_relation }}
     union all
-    select {{dest_cols_csv}}
+    select {{ dest_cols_csv }}
     from {{ target_relation }}
     where
       not (true {{ filter }})
       {{ filter_partition_by }}
+    {% else -%}
+    select {{ empty_columns_csv }}
+    where false
+    {% endif %}
   );
 {%- endmacro %}
 
