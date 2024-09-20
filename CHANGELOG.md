@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.4.4 - (2024-09-16)
+## 0.4.5 - (2024-09-20)
+---
+
+### Fix
+* add validation on null values of columns defined in 'tbm_filter_key'
+* fix error messages
+
+## 0.4.4 - (2024-09-20)
 ---
 
 ### Fix

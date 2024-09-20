@@ -72,8 +72,9 @@
       {%- endfor -%}
     {%- endif -%}
   {%- endif -%}
-  {%- if values_list | count() > 0 -%}
-    {{ return(values_list|sort()) }}
+  {%- set values_list_checked = tbmacro.tbmacro_validate_value_list(values_list) -%}
+  {%- if values_list_checked | count() > 0 -%}
+    {{ return(values_list_checked|sort()) }}
   {%- else -%}
     {{ return(none) }}
   {%- endif -%}

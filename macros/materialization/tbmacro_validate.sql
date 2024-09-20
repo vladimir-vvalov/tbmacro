@@ -258,13 +258,13 @@
 
   {% set invalid_description_msg -%}
     tbm_contract error
-    When tbm_contract = true, all columns must have description and datatype
+    When tbm_contract = true, all columns must have description
     description not found for{{' '}} 
   {%- endset %}
 
   {% set invalid_data_type_msg -%}
     tbm_contract error
-    When tbm_contract = true, all columns must have description and datatype
+    When tbm_contract = true, all columns must have datatype
     data_type not found for column: 
   {%- endset %}
 
@@ -352,4 +352,23 @@
   {{ log("(tbm_incremental) Contract columns validation successfull") }}
   {{ return(true) }}
 
+{%- endmacro %}
+
+
+{% macro tbmacro_validate_value_list(values_list=[]) -%}
+  {#-- Validate values list that has got from values in columns defined in 'tbm_filter_key' --#}
+
+  {% set invalid_value -%}
+    tbm_incremental error
+    Null values not allowed in columns defined in 'tbm_filter_key'
+  {%- endset %}
+
+  {%- for item in values_list -%}
+    {% if not item %}
+      {{ print(item) }}
+      {% do exceptions.raise_compiler_error(invalid_value) %}
+    {% endif %}
+  {%- endfor -%}
+
+  {% do return(values_list) %}
 {%- endmacro %}
