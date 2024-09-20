@@ -99,13 +99,16 @@
       {{ log("(tbm_incremental) Rows was deleted from "~target_relation) }}
     {%- endif -%}
 
-    {%- if strategy == 'insert_overwrite' and is_existing_relation == true and tbm_config.mode is not none and filter and tbm_config.limit is none -%}
+    {%- if strategy == 'insert_overwrite' and is_existing_relation == true and tbm_config.mode is not none and tbm_config.limit is none -%}
       {#-- Create secondary temporary view for union selection with out of range data if strategy == 'insert_overwrite' --#}
       {%- set filter_partition_by = tbmacro.tbmacro_filter_partition_by(tmp_relation, tbm_config) | default('') -%}
       {%- call statement('create_tmp_insert_overwrite_relation', language=language) -%}
         {{ tbmacro.tbmacro_create_insert_overwrite_as(tmp_relation, target_relation, tmp_insert_overwrite_relation, filter, filter_partition_by) }}
       {%- endcall -%}
       {{ log("(tbm_incremental) Selection unioned with out of range data for insert overwrite") }}
+      {%- if not filter -%}
+        {{ log("(tbm_incremental) Selection is empty") }}
+      {%- endif -%}
       {#-- Run incremental statement using secondary temporary view --#}
       {%- call statement('main') -%}
         {{ tbmacro.tbmacro_get_incremental_sql(tmp_insert_overwrite_relation, target_relation, existing_relation, tbm_config, filter, filter_merge) }}
