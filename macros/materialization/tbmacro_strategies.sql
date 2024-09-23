@@ -145,7 +145,6 @@
     {%- set dest_columns = adapter.get_columns_in_relation(target) -%}
     {#-- update_checked_columns was checked if tbm_update_changes_only=true --#}
     {%- set update_checked_columns = tbmacro.tbmacro_get_merge_update_columns(tbm_config, dest_columns) -%}
-    {{ log('(xepak) '~update_checked_columns|unique|list) }}
 
     {#-- count  --#}
     {%- set sql -%}
