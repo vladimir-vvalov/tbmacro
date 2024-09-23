@@ -123,13 +123,13 @@
   {%- set update_columns = [] -%}
   {%- if include_check_columns -%}
     {%- for column in dest_columns -%}
-      {% if column.column | lower not in unique_key %}
+      {% if (column.column | lower in include_check_columns) or (column.column | lower in unique_key) %}
         {%- do update_columns.append(column.quoted) -%}
       {% endif %}
     {%- endfor -%}
   {%- elif exclude_check_columns -%}
     {%- for column in dest_columns -%}
-      {% if (column.column | lower not in exclude_check_columns) and (column.column | lower not in unique_key) %}
+      {% if (column.column | lower not in exclude_check_columns) %}
         {%- do update_columns.append(column.quoted) -%}
       {% endif %}
     {%- endfor -%}
