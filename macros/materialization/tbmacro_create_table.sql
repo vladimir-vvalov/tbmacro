@@ -123,7 +123,6 @@
   {%- if not filter -%}
     {#-- create empty query --#}
     {%- for item in dest_columns -%}
-      {{ log('(xepak) '~item.quoted) }}
       {%- do empty_columns.append('null as '~item.quoted) -%}
     {%- endfor -%}
     {%- set empty_columns_csv = empty_columns | join(', ') -%}

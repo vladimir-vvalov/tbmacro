@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.4.6 - (2024-09-20)
+---
+
+### Fix
+* fix 'tbm_update_changes_only' behaviour
+
 ## 0.4.5 - (2024-09-20)
 ---
 
