@@ -9,7 +9,7 @@
             {%- set check = tbmacro.tbmacro_check_relation(relation) -%}
             {%- if check == True -%}
                 {% set invalid_spark -%}
-                    (tbmacro_trap_for_bug) table was found in database but relations doesnt exist in manifest: {{ relation }}
+                    (tbmacro_trap_for_bug) table was found in database but relations doesn't exist in manifest: {{ relation }}
                 {%- endset %}
                 {% do exceptions.raise_compiler_error(invalid_spark) %}
                 {{ return("select raise_error('ERROR: trap for bug');") }}

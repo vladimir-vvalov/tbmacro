@@ -23,6 +23,7 @@
   {%- set from = config.get('tbm_filter_from', none) or none -%}
   {%- set till = config.get('tbm_filter_till', none) or none -%}
   {%- set quote_values = config.get('tbm_filter_quote_values') or true -%}
+  {%- set merge_check = config.get('tbm_filter_merge_check') or false -%}
 
   {#-- tbm merge --#}
   {%- set update_changes_only = config.get('tbm_update_changes_only') or false -%}
@@ -187,6 +188,7 @@
     'from': from,
     'till': till,
     'quote_values': quote_values,
+    'merge_check': merge_check,
 
     'update_changes_only': update_changes_only,
     'operator': operator,
@@ -310,33 +312,36 @@
     {{ return(false) }}
   {%- endif -%}
 
+  {#-- Match columns in the table with columns in the YML --#}
   {%- set raw_dest_columns = adapter.get_columns_in_relation(target) -%}
   {%- set dest_columns = [] -%}
   {%- for item in raw_dest_columns -%}
     {%- do dest_columns.append(item.column) -%}
   {%- endfor -%}
+  {%- set model_columns = model.columns.keys() | list -%}
+  {% set only_in_dest = dest_columns | reject('in', model_columns) | list -%}
+  {% set only_in_model = model_columns | reject('in', dest_columns) | list %}
 
   {#-- Validate table columns in the YML --#}
-  {%- for item in dest_columns -%}
-    {%- if item not in model.columns.keys() -%}
-      {% set invalid_yml -%}
-      tbm_contract error
-      Column {{ item.column }} was not described in YML
+  {%- if only_in_dest -%}
+      {% set invalid_yml_1 -%}
+      Column {{ only_in_dest | tojson }} was not described in YML
       {%- endset -%}
-      {% do exceptions.raise_compiler_error(invalid_yml) %}
-    {%- endif -%}
-  {%- endfor -%}
+  {%- endif -%}
 
   {#-- Validate YML columns in the table --#}
-  {%- for item in model.columns.keys() -%}
-    {%- if item not in dest_columns -%}
-      {% set invalid_yml -%}
-      tbm_contract error
-      Column {{ item.column }} does not exist in table
+  {%- if only_in_model -%}
+      {% set invalid_yml_2 -%}
+      Column {{ only_in_model | tojson }} does not exist in table
       {%- endset -%}
-      {% do exceptions.raise_compiler_error(invalid_yml) %}
-    {%- endif -%}
-  {%- endfor -%}
+  {%- endif -%}
+
+  {#-- Raise error if any column mismatch --#}
+  {%- if only_in_dest or only_in_model -%}
+    {% do exceptions.raise_compiler_error('\ttbm_contract error\n\t\t' ~ invalid_yml_1 ~ '\n\t\t' ~ invalid_yml_2) %}
+  {%- endif -%}
+
+  {#-- Validate data types --#}
   {%- for item in raw_dest_columns -%}
     {%- if item.data_type != model.columns[item.column].data_type -%}
       {% set invalid_yml -%}
