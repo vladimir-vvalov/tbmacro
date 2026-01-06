@@ -14,7 +14,7 @@
     {%- endif -%}
   {%- elif strategy in ['merge'] -%}
     {#-- check for update using config 'tbm_update_changes_only' --#}
-    {%- set check_update_changes_only = tbmacro.tbmacro_check_update_changes_only(target, source, tbm_config) -%}
+    {%- set check_update_changes_only = tbmacro.tbmacro_check_update_changes_only(target, source, tbm_config, filter) -%}
     {%- if check_update_changes_only == false -%}
       {#-- merge all columns for datasources which implement MERGE INTO (spark) --#}
       {{ tbmacro.tbmacro_get_merge_sql(target, source, tbm_config, filter_merge, dest_columns=none) }}
@@ -132,7 +132,7 @@
 {%- endmacro %}
 
 
-{% macro tbmacro_check_update_changes_only(target, source, tbm_config) -%}
+{% macro tbmacro_check_update_changes_only(target, source, tbm_config, filter) -%}
   {#-- check merge for complete match --#}
   {%- set update_changes_only = tbm_config.update_changes_only -%}
   {#-- return false if not need to check --#}
@@ -149,7 +149,19 @@
     {#-- count  --#}
     {%- set sql -%}
     select count(*) as _dbt__tbmacro_check_count
-    from {{ target }} as DBT_INTERNAL_DEST
+    from (
+        select *
+        from {{ target }}
+        {#-- check for tbm_filter_merge_check #}
+        {%- if tbm_config.merge_check == true %}
+        where true
+          {%- if filter %}
+          {{ filter }}
+          {%- else %}
+          and false
+          {%- endif %}
+        {%- endif %}
+    ) as DBT_INTERNAL_DEST
     full join {{ source }} as DBT_INTERNAL_SOURCE
       on true
       {% if unique_key is not none and unique_key -%}
@@ -165,9 +177,15 @@
       )
     {%- endset -%}
 
-    {%- set result = run_query(sql) -%}
-    {%- set cnt = result.columns[0].values() -%}
-    {%- if cnt[0] | int == 0 -%}
+    {%- if tbm_config.merge_check == true and not filter -%}
+      {%- set cnt_rows = 0 -%}
+    {%- else -%}
+      {%- set result = run_query(sql) -%}
+      {%- set cnt = result.columns[0].values() -%}
+      {%- set cnt_rows = cnt[0] | int -%}
+    {%- endif -%}
+
+    {%- if cnt_rows == 0 -%}
       {{ return(true) }}
     {%- else -%}
       {{ return(false) }}

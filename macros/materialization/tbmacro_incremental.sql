@@ -101,13 +101,23 @@
 
     {%- if strategy == 'insert_overwrite' and is_existing_relation == true and tbm_config.mode is not none and tbm_config.limit is none -%}
       {#-- Create secondary temporary view for union selection with out of range data if strategy == 'insert_overwrite' --#}
-      {%- set filter_partition_by = tbmacro.tbmacro_filter_partition_by(tmp_relation, tbm_config) | default('') -%}
-      {%- call statement('create_tmp_insert_overwrite_relation', language=language) -%}
-        {{ tbmacro.tbmacro_create_insert_overwrite_as(tmp_relation, target_relation, tmp_insert_overwrite_relation, filter, filter_partition_by) }}
-      {%- endcall -%}
-      {{ log("(tbm_incremental) Selection unioned with out of range data for insert overwrite") }}
-      {%- if not filter -%}
-        {{ log("(tbm_incremental) Selection is empty") }}
+      {%- set filter_partition_by_dict = tbmacro.tbmacro_filter_partition_by(tmp_relation, tbm_config) -%}
+      {%- set filter_partition_by = filter_partition_by_dict.sql.value -%}
+      {%- set is_empty_partition_by = filter_partition_by_dict.is_empty -%}
+
+      {#-- Check if selection is empty due to partition_by filter --#}
+      {%- if is_empty_partition_by == true -%}
+        {%- set tmp_insert_overwrite_relation = tmp_relation -%}
+        {{ log("(tbm_incremental) Selection is empty due to partition_by filter") }}
+      {%- else -%}
+        {#-- Create temporary view for insert overwrite --#}
+        {%- call statement('create_tmp_insert_overwrite_relation', language=language) -%}
+          {{ tbmacro.tbmacro_create_insert_overwrite_as(tmp_relation, target_relation, tmp_insert_overwrite_relation, filter, filter_partition_by) }}
+        {%- endcall -%}
+        {{ log("(tbm_incremental) Selection unioned with out of range data for insert overwrite") }}
+        {%- if not filter -%}
+          {{ log("(tbm_incremental) Selection is empty") }}
+        {%- endif -%}
       {%- endif -%}
       {#-- Run incremental statement using secondary temporary view --#}
       {%- call statement('main') -%}

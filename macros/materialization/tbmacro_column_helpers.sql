@@ -42,17 +42,23 @@
   {#-- Get condition string according to tbm_filter_* configurations for partition_by columns --#}
   {%- set key = tbmacro.tbmacro_surrogate_key(tbm_config.partition_by) -%}
   {%- set sql = '' -%}
+  {%- set is_empty = false -%}
   {%- if key is not none and key -%}
     {%- set values_list = tbmacro.tbmacro_values_filter_key(relation, tbm_config.partition_by) -%}
-    {%- set sql -%}
+    {%- if values_list is none or not values_list -%}
+      {%- set is_empty = true -%}
+    {%- else -%}
+    {%- set sql -%}}
     and {{ key }} in (
       {%- for item in values_list -%}
       {{ tbmacro.tbmacro_quote(item, tbm_config.quote_values) }}{{ "," if not loop.last }}
       {%- endfor -%}
     )
     {%- endset -%}
+    {%- endif -%}
   {%- endif -%}
-  {{ return(sql) }}
+  {%- set return_dict = {"sql": sql, "is_empty": is_empty} -%}
+  {{ return(return_dict) }}
 {%- endmacro %}
 
 

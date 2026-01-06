@@ -2,68 +2,69 @@
 
 All notable changes to this project will be documented in this file.
 
-## 0.4.6 - (2024-09-20)
----
+## 0.5.0 - (2026-01-06)
+
+### Feature
+* add parameter 'tbm_filter_merge_check' to control filter behavior in merge operations
 
 ### Fix
-* fix 'tbm_update_changes_only' behaviour
+* fix 'insert_overwrite' strategy to handle empty result set correctly
+* fix 'merge' strategy with 'tbm_update_changes_only' option to correctly evaluate changes when using 'tbm_filter_mode' and 'tbm_filter_key'
+* fix 'tbm_contract' validation to display detailed column differences
+
+## 0.4.6 - (2024-09-20)
+
+### Fix
+* fix 'merge' strategy behavior with 'tbm_update_changes_only' option
 
 ## 0.4.5 - (2024-09-20)
----
 
 ### Fix
-* add validation on null values of columns defined in 'tbm_filter_key'
-* fix error messages
+* add validation for null values in filter key columns
+* improve error messages clarity
 
 ## 0.4.4 - (2024-09-20)
----
 
 ### Fix
-* fix insert_overwrite bug with tbm_config.mode is not none
+* fix 'insert_overwrite' strategy when filter mode is configured
 
 ## 0.4.3 - (2024-09-16)
----
 
 ### Fix
-* rename parameter 'tbm_filter_quote_columns' to 'tbm_filter_quote_values'
-* remove quoting for 'tbm_filter_from' and 'tbm_filter_till'
+* rename parameter 'tbm_filter_quote_columns' to 'tbm_filter_quote_values' for clarity
+* fix quote handling for filter range parameters
 
 ## 0.4.2 - (2024-09-13)
----
 
 ### Fix
-* removed location macros
-* fix getting location path
-* add preconditions to check none value before using string filters
+* remove location management functionality
+* fix location retrieval logic
+* add validation for null values before applying string-based filters
 
 ## 0.4.0 - (2024-09-12)
----
 
 ### Fix
-* removed unusable macros
+* remove deprecated macro functionality
 
 ## 0.3.0 - (2024-08-16)
----
 
 ### Feature
-* check columns and datatypes when tbm_contract == true and on_schema_change not in ['fail', 'ignore']
-* add parameter tbm_contract_description for manage check description behaviour: 'ignore', 'warn' or 'error'
-* allow create table without descriptions
+* add 'tbm_contract' option to validate columns and data types with schema change handling
+* add 'tbm_contract_description' parameter to control how column description mismatches are handled
+* allow table creation without column descriptions
 
 ## 0.2.0 - (2024-08-14)
----
 
 ### Feature
-* add runing tbmacro_trap_for_bug into tbm_incremental
-* change tbm_update_changes_only behaviour
-* change raize error in tbmacro_trap_for_bug
-* add codeowners
+* add bug trap mechanism to 'tbm_incremental' materialization (macro 'tbmacro_trap_for_bug')
+* add 'tbm_update_changes_only' option to 'merge' strategy
+* add error handling improvements in bug trap
+* add codeowners file
 
 ### Fix
-* fix query for delete+insert and merge (change * to columns)
+* fix column selection in 'delete+insert' and 'merge' strategies to use explicit columns instead of wildcards
 
 ## 0.1.0 - (2024-08-06)
----
 
 ### New
 * created dbt package
