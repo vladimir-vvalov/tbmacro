@@ -1,5 +1,5 @@
+{#-- Build WHERE condition based on tbm_filter_* configuration --#}
 {% macro tbmacro_filter_condition(relation, tbm_config, alias) -%}
-  {#-- Get condition string according to tbm_filter_* configurations --#}
   {%- set key = tbmacro.tbmacro_surrogate_key(tbm_config.key, alias) -%}
   {%- set sql = "" -%}
   {%- set values_list = [] -%}
@@ -38,8 +38,8 @@
 {%- endmacro %}
 
 
+{#-- Build WHERE condition for partition_by columns based on tbm_filter_* configuration --#}
 {% macro tbmacro_filter_partition_by(relation, tbm_config) -%}
-  {#-- Get condition string according to tbm_filter_* configurations for partition_by columns --#}
   {%- set key = tbmacro.tbmacro_surrogate_key(tbm_config.partition_by) -%}
   {%- set sql = '' -%}
   {%- set is_empty = false -%}
@@ -62,8 +62,8 @@
 {%- endmacro %}
 
 
+{#-- Extract distinct values from relation for given key columns --#}
 {% macro tbmacro_values_filter_key(relation, key=[]) -%}
-  {#-- Get condition values from relation using key --#}
   {%- set values_list = [] -%}
   {%- if not (not relation or not key) -%}
     {%- if execute -%}
@@ -87,8 +87,8 @@
 {%- endmacro %}
 
 
+{#-- Generate surrogate key expression from key columns (single or concatenated) --#}
 {% macro tbmacro_surrogate_key(key=[], alias='') -%}
-  {#-- Make surrogate key --#}
   {%- set quoted_list = [] -%}
   {%- set alias = '' if alias is none else alias -%}
   {%- set return_value = '' -%}
@@ -102,8 +102,8 @@
 {%- endmacro %}
 
 
+{#-- Generate alias name for surrogate key column --#}
 {% macro tbmacro_surrogate_key_alias(key=[]) -%}
-  {#-- Make alias for surrogate key --#}
   {% set return_value = '' %}
   {%- if key and key is not none -%}
     {% set return_value = '_dbt__tbmacro_key_'~(key[0] if key | count() == 1 else key | join("_")) %}
@@ -112,15 +112,15 @@
 {%- endmacro %}
 
 
+{#-- Quote value as string literal if quote_values is true --#}
 {% macro tbmacro_quote(value, quote_values = true) -%}
-  {#-- Quote value --#}
   {%- set return_value = "'"~value~"'" if quote_values == true else value -%}
   {{ return(return_value) }}
 {%- endmacro %}
 
 
+{#-- Get columns to update in MERGE statement (respects include/exclude configuration) --#}
 {% macro tbmacro_get_merge_update_columns(tbm_config, dest_columns) -%}
-  {#-- Get columns that will be updated if tbm_update_changes_only=true --#}
   {%- set default_cols = dest_columns | map(attribute="quoted") | list -%}
   {%- set include_check_columns = tbm_config.include_check_columns -%}
   {%- set exclude_check_columns = tbm_config.exclude_check_columns -%}

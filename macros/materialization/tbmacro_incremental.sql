@@ -1,5 +1,5 @@
+{#-- Custom incremental materialization 'tbm_incremental' with advanced filtering and contract enforcement --#}
 {% materialization tbm_incremental, adapter='spark', supported_languages=['sql'] -%}
-  {#-- Custom strategy 'tbm_incremental' --#}
 
   {#-- Validate config --#}
   {%- set tbm_config = tbmacro.tbmacro_validate_config() -%}
@@ -43,13 +43,13 @@
     {{ log("(tbm_incremental) Incremental relation not found or should be changed") }}
 
     {%- if tbm_config.tbm_contract == true -%}
-      {#-- If tbm_contract == true create or restore+create table --#}
+      {#-- If tbm_contract == true, create or restore+create table --#}
       {%- if existing_relation.is_view -%}
         {#-- Drop view --#}
         {% do adapter.drop_relation(existing_relation) %}
       {%- endif -%}
       {%- if (existing_relation.is_view or existing_relation is none) and location_clause() and location_clause() is not none -%}
-        {#-- Get location path --#}
+        {#-- Extract location path from location clause --#}
         {% set location_path = ((location_clause() | trim) | replace("location ", "")).strip("\'") %}
         {%- if tbmacro.tbmacro_get_existing_location(file_format, location_path) == true -%}
           {#-- Restore table because location exists --#}
@@ -91,16 +91,16 @@
     {%- set filter_merge = filter_dict.alias | default('') -%}
     {{ log("(tbm_incremental) Got filters") }}
     {%- do process_schema_changes(on_schema_change, tmp_relation, existing_relation) -%}
+    {#-- Delete if strategy == 'delete+insert' --#}
     {%- if strategy == 'delete+insert' and existing_relation and tbm_config.mode is not none and filter and is_existing_relation == true -%}
-      {#-- Delete if strategy == 'delete+insert' --#}
       {%- call statement('delete_from_relation') -%}
         {{ tbmacro.tbmacro_get_delete_from_sql(target_relation, filter) }}
       {%- endcall -%}
-      {{ log("(tbm_incremental) Rows was deleted from "~target_relation) }}
+      {{ log("(tbm_incremental) Rows were deleted from "~target_relation) }}
     {%- endif -%}
 
+    {#-- Create secondary temporary view for union selection with out of range data if strategy == 'insert_overwrite' --#}
     {%- if strategy == 'insert_overwrite' and is_existing_relation == true and tbm_config.mode is not none and tbm_config.limit is none -%}
-      {#-- Create secondary temporary view for union selection with out of range data if strategy == 'insert_overwrite' --#}
       {%- set filter_partition_by_dict = tbmacro.tbmacro_filter_partition_by(tmp_relation, tbm_config) -%}
       {%- set filter_partition_by = filter_partition_by_dict.sql.value -%}
       {%- set is_empty_partition_by = filter_partition_by_dict.is_empty -%}

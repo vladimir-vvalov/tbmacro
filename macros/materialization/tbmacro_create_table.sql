@@ -1,9 +1,11 @@
+{#-- Dispatcher for CREATE TABLE statement generation --#}
 {% macro tbmacro_get_create_table(relation, tbm_config, should_full_refresh) -%}
   {{ adapter.dispatch('tbmacro_get_create_table', 'tbmacro')(relation, tbm_config, should_full_refresh) }}
 {%- endmacro %}
 
+
+{#-- Generate CREATE OR REPLACE TABLE statement with contract enforcement --#}
 {% macro spark__tbmacro_get_create_table(relation, tbm_config, should_full_refresh) -%}
-  {#-- Get sql code with create or repclace table using tbm_contract=true --#}
   {%- set sql_header = config.get('sql_header', none) -%}
   {%- set sql -%}
   {{ sql_header if sql_header is not none }}
@@ -26,8 +28,8 @@
 {% endmacro %}
 
 
+{#-- Generate COMMENT clause for table from model description --#}
 {% macro tbmacro_comment_clause() -%}
-  {#-- Get comment for table description --#}
   {%- if model.description and model.description is not none -%}
   comment '{{ (model.description | trim()) | replace("'", "\\'") }}'
   {%- else -%}
@@ -36,8 +38,8 @@
 {%- endmacro %}
 
 
+{#-- Generate COMMENT clause for column from description --#}
 {% macro tbmacro_column_comment_clause(tbm_config, description) -%}
-  {#-- Get comment for column description --#}
   {% if description and description is not none -%}
     comment '{{ (description|trim()) | replace("'", "\\'") }}'
   {%- else -%}
@@ -46,8 +48,8 @@
 {%- endmacro %}
 
 
+{#-- Restore table from storage location when it exists in storage but not in catalog --#}
 {% macro tbmacro_restore_relation(relation, location) -%}
-  {#-- Get sql code with restore table then it not exists in hive but exists in minio --#}
   {%- if not relation or not location -%}
     {{ exceptions.warn("Warning: Not exists relation: "~relation~" or location: "~location) }}
   {%- else -%}
@@ -58,8 +60,8 @@
 {%- endmacro %}
 
 
+{#-- Check if Delta table exists at storage location --#}
 {% macro tbmacro_get_existing_location(file_format, location) -%}
-  {#-- Check delta table by location in minio --#}
   {%- if execute -%}
     {%- set query = 'explain desc formatted '~file_format~'.`'~location~'`' -%}
     {%- set result = run_query(query) -%}
@@ -73,8 +75,8 @@
 {%- endmacro -%}
 
 
+{#-- Wrap compiled SQL with column casting and limit if configured --#}
 {% macro tbmacro_cast_compiled_code(target_relation, compiled_code, tbm_config) -%}
-  {#-- Enrichment compiled code with casting columns and limit --#}
   {%- set cast_columns = tbm_config.cast_columns -%}
   {%- set limit = tbm_config.limit -%}
   {%- if cast_columns == true -%}
@@ -95,8 +97,8 @@
 {%- endmacro %}
 
 
+{#-- Wrap compiled SQL with LIMIT clause if configured --#}
 {% macro tbmacro_limit_compiled_code(target_relation, compiled_code, limit) -%}
-  {#-- Enrichment compiled code with limit --#}
   {%- if limit is not none -%}
     {%- set return_compiled_code -%}
     with _dbt__tmp_limit_{{ target_relation.identifier }} as (
@@ -113,8 +115,8 @@
 {%- endmacro %}
 
 
+{#-- Create temp view with new data UNION existing partitions outside filter range --#}
 {% macro tbmacro_create_insert_overwrite_as(tmp_relation, target_relation, tmp_insert_overwrite_relation, filter, filter_partition_by) -%}
-  {#-- Get sql code with union model selection and other partitions part according to tbm_filter_* configurations --#}
   {%- set empty_columns = [] -%}
   {%- set empty_columns_csv = '' -%}
   {%- set dest_columns = adapter.get_columns_in_relation(tmp_relation) -%}
@@ -145,7 +147,7 @@
 {%- endmacro %}
 
 
+{#-- Create temporary relation name for insert overwrite operations --#}
 {% macro tbmacro_make_temp_insert_overwrite_relation(base_relation, suffix='__dbt_insert_overwrite_tmp') -%}
-  {#-- Get default sql code for temporary table with custom suffix --#}
   {{ return(adapter.dispatch('make_temp_relation', 'dbt')(base_relation, suffix)) }}
 {%- endmacro %}

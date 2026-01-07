@@ -1,5 +1,6 @@
+{#-- Detect and prevent Spark bug where table exists in database but not in manifest
+     Prevents errors from "show table extended like '*'" in incremental models --#}
 {% macro tbmacro_trap_for_bug(relation=this) %}
-    {#-- Trap for replace table bug in incremental models, error in spark on "show table extended like '*'" --#}
     {%- if not execute or should_full_refresh() -%}
         {{ return('') }}
     {%- else -%}

@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.1 - (2026-01-07)
+
+### Fix
+* fix 'tbm_filter_merge_check' to only apply when 'tbm_filter_mode' is configured
+* comments clarified
+
 ## 0.5.0 - (2026-01-06)
 
 ### Feature
