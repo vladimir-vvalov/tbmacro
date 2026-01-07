@@ -1,22 +1,22 @@
+{#-- Route incremental strategy execution to appropriate implementation --#}
 {% macro tbmacro_get_incremental_sql(source, target, existing, tbm_config, filter, filter_merge) %}
-  {#-- tbm_incremental strategies management --#}
   {%- set strategy = tbm_config.strategy -%}
   {%- if strategy in ['append', 'delete+insert'] -%}
-    {#-- insert new records into existing table, without updating or overwriting --#}
+    {#-- Insert new records into existing table without updating or overwriting --#}
     {{ tbmacro.tbmacro_get_insert_into_sql(source, target) }}
   {%- elif strategy == 'insert_overwrite' -%}
-    {#-- insert or overwrite all partitions existing in selection --#}
+    {#-- Insert or overwrite all partitions existing in selection --#}
     {%- if tbm_config.mode is not none and not filter -%}
-      {#-- append empty selection because selection is empty and config 'tbm_filter_mode' exists --#}
+      {#-- Append empty selection (selection is empty but tbm_filter_mode is configured) --#}
       {{ tbmacro.tbmacro_get_insert_into_sql(source, target) }}
     {%- else -%}
       {{ get_insert_overwrite_sql(source, target, existing) }}
     {%- endif -%}
   {%- elif strategy in ['merge'] -%}
-    {#-- check for update using config 'tbm_update_changes_only' --#}
+    {#-- Check if update is needed using tbm_update_changes_only configuration --#}
     {%- set check_update_changes_only = tbmacro.tbmacro_check_update_changes_only(target, source, tbm_config, filter) -%}
     {%- if check_update_changes_only == false -%}
-      {#-- merge all columns for datasources which implement MERGE INTO (spark) --#}
+      {#-- Merge all columns for data sources implementing MERGE INTO (Spark) --#}
       {{ tbmacro.tbmacro_get_merge_sql(target, source, tbm_config, filter_merge, dest_columns=none) }}
     {%- else -%}
       {{ log("(tbm_incremental) Merge model did not update because data had not changed") }}
@@ -31,8 +31,8 @@
 {% endmacro %}
 
 
+{#-- Generate INSERT INTO statement --#}
 {% macro tbmacro_get_insert_into_sql(source_relation, target_relation) %}
-  {#-- Insert clause --#}
   {%- set dest_columns = adapter.get_columns_in_relation(target_relation) -%}
   {%- set dest_cols_csv = dest_columns | map(attribute='quoted') | join(', ') -%}
   insert into table {{ target_relation }} ({{dest_cols_csv}})
@@ -41,20 +41,21 @@
 {% endmacro %}
 
 
+{#-- Generate DELETE statement with WHERE condition --#}
 {% macro tbmacro_get_delete_from_sql(target_relation, condition) %}
-  {#-- Delete clause --#}
   delete from {{ target_relation }}
   where true
   {{ condition }}
 {% endmacro %}
 
 
+{#-- Dispatch for MERGE statement --#}
 {% macro tbmacro_get_merge_sql(target, source, tbm_config, filter, dest_columns) -%}
   {{ adapter.dispatch('tbmacro_get_merge_sql', 'tbmacro')(target, source, tbm_config, filter, dest_columns) }}
 {%- endmacro %}
 
+{#-- Generate MERGE statement for Spark with update/insert/delete logic --#}
 {% macro spark__tbmacro_get_merge_sql(target, source, tbm_config, filter, dest_columns) -%}
-  {#-- Merge clause --#}
   {%- set unique_key = tbm_config.unique_key -%}
   {%- set merge_update_columns = tbm_config.merge_update_columns -%}
   {%- set merge_exclude_columns = tbm_config.merge_exclude_columns -%}
@@ -62,9 +63,9 @@
   {%- set operator = tbm_config.operator -%}
   {%- set sql_header = config.get('sql_header', none) -%}
 
-  {#-- need dest_columns for merge_exclude_columns, default to use "*" --#}
+  {#-- Retrieve dest_columns for merge_exclude_columns processing, default to all columns --#}
   {%- set dest_columns = adapter.get_columns_in_relation(target) -%}
-  {#-- update_columns was updated --#}
+  {#-- Filter columns to be updated based on configuration --#}
   {%- set update_columns = get_merge_update_columns(merge_update_columns, merge_exclude_columns, dest_columns) -%}
 
   {{ sql_header if sql_header is not none }}
@@ -132,28 +133,27 @@
 {%- endmacro %}
 
 
+{#-- Check if MERGE would produce any updates (optimization to skip unnecessary merge) --#}
 {% macro tbmacro_check_update_changes_only(target, source, tbm_config, filter) -%}
-  {#-- check merge for complete match --#}
   {%- set update_changes_only = tbm_config.update_changes_only -%}
-  {#-- return false if not need to check --#}
   {%- if update_changes_only == true and execute -%}
     {%- set unique_key = tbm_config.unique_key -%}
     {%- set include_check_columns = tbm_config.include_check_columns -%}
     {%- set exclude_columns = tbm_config.exclude_columns -%}
 
-    {#-- need dest_columns for merge_exclude_columns, default to use "*" --#}
+    {#-- Retrieve dest_columns for merge_exclude_columns processing --#}
     {%- set dest_columns = adapter.get_columns_in_relation(target) -%}
-    {#-- update_checked_columns was checked if tbm_update_changes_only=true --#}
+    {#-- Determine columns to check based on tbm_update_changes_only configuration --#}
     {%- set update_checked_columns = tbmacro.tbmacro_get_merge_update_columns(tbm_config, dest_columns) -%}
 
-    {#-- count  --#}
+    {#-- Calculate the number of changed rows --#}
     {%- set sql -%}
     select count(*) as _dbt__tbmacro_check_count
-    from (
+    from (  
         select *
         from {{ target }}
-        {#-- check for tbm_filter_merge_check #}
-        {%- if tbm_config.merge_check == true %}
+        {#-- Filter target data when tbm_filter_merge_check is enabled --#}
+        {%- if tbm_config.merge_check == true and tbm_config.mode is not none and tbm_config.mode %}
         where true
           {%- if filter %}
           {{ filter }}
@@ -177,7 +177,7 @@
       )
     {%- endset -%}
 
-    {%- if tbm_config.merge_check == true and not filter -%}
+    {%- if tbm_config.merge_check == true and not filter and tbm_config.mode is not none and tbm_config.mode -%}
       {%- set cnt_rows = 0 -%}
     {%- else -%}
       {%- set result = run_query(sql) -%}

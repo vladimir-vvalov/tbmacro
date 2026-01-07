@@ -1,5 +1,5 @@
+{#-- Parse and validate all tbm_* configuration parameters with defaults and error handling --#}
 {% macro tbmacro_validate_config() -%}
-  {#-- Get model configurations, check and set defaults --#}
 
   {#-- origin --#}
   {%- set raw_file_format = config.get('file_format', default='delta') -%}
@@ -17,7 +17,7 @@
   {%- set limit = config.get('limit', none) or none -%}
   {%- set trap_for_bug = config.get('tbm_trap_for_bug', true) or true -%}
 
-  {#-- tmb filter --#}
+  {#-- tbm filter --#}
   {%- set mode = config.get('tbm_filter_mode', none) or none -%}
   {%- set raw_key = config.get('tbm_filter_key', none) or none -%}
   {%- set from = config.get('tbm_filter_from', none) or none -%}
@@ -35,20 +35,21 @@
   {%- set allow_modes = ['values', 'range', 'ranged_values'] -%}
   {%- set allow_contract_description = ['ignore', 'warn', 'error'] -%}
   {%- set allow_operator = ['delete'] -%}
+
   {#-- error messages --#}
   {% set invalid_contract_description_msg -%}
     tbm_incremental error
     Invalid tbm_contract_description: '{{ contract_description }}'
-    Set one of this: none or one of {{ allow_contract_description }}
+    Set one of these: none or one of {{ allow_contract_description }}
   {%- endset %}
   {% set invalid_filter_mode_msg -%}
     tbm_incremental error
     Invalid tbm_filter_mode: '{{ mode }}'
-    Set one of this: none or one of {{ allow_modes }}
+    Set one of these: none or one of {{ allow_modes }}
   {%- endset %}
   {% set invalid_delete_insert_msg -%}
     tbm_incremental error
-    Strategy 'delete+insert' dont allow if 'tbm_filter_mode' is none
+    Strategy 'delete+insert' is not allowed if 'tbm_filter_mode' is none
   {%- endset %}
   {% set invalid_key_msg -%}
     tbm_incremental error
@@ -57,7 +58,7 @@
   {% set invalid_merge_operator_msg -%}
     tbm_incremental error
     Invalid merge operator: {{ operator }}
-    Set one of this: none or one of {{ allow_operator }}
+    Set one of these: none or one of {{ allow_operator }}
   {%- endset %}
   {% set invalid_merge_check_columns_msg -%}
     tbm_incremental error
@@ -201,9 +202,8 @@
 {%- endmacro %}
 
 
+{#-- Validate file format is supported --#}
 {% macro tbmacro_validate_file_format(raw_file_format) -%}
-  {#-- Validate the file format --#}
-
   {%- set accepted_formats = ['delta'] -%}
 
   {% set invalid_file_format_msg -%}
@@ -220,9 +220,8 @@
 {%- endmacro %}
 
 
+{#-- Validate incremental strategy is supported --#}
 {% macro tbmacro_validate_strategy(raw_strategy, file_format) -%}
-  {#-- Validate the incremental strategy --#}
-
   {%- set accepted_strategies = ['append', 'merge', 'insert_overwrite', 'delete+insert'] -%}
 
   {% set invalid_strategy_msg -%}
@@ -239,8 +238,8 @@
 {%- endmacro %}
 
 
+{#-- Validate tbm_contract configuration and enforce schema definitions --#}
 {% macro tbmacro_validate_contract(raw_tbm_contract, contract_description, model = {}) -%}
-  {#-- Validate tbm_contract --#}
   {%- if not raw_tbm_contract -%}
     {% do return(raw_tbm_contract) %}
   {%- endif -%}
@@ -300,14 +299,14 @@
     {% do exceptions.warn("Warning: "~invalid_description_msg~warn_count) %}
   {%- endif -%}
 
-  {{ log("(tbm_incremental) Contract validation successfull") }}
+  {{ log("(tbm_incremental) Contract validation successful") }}
 
   {% do return(raw_tbm_contract) %}
 {%- endmacro %}
 
 
+{#-- Verify table columns match schema definition in contract mode --#}
 {% macro tbmacro_validate_contract_columns(target, on_schema_change, model = {}) -%}
-  {#-- Validate tbm_contract columns --#}
   {%- if on_schema_change not in ['fail', 'ignore'] and on_schema_change -%}
     {{ return(false) }}
   {%- endif -%}
@@ -354,14 +353,14 @@
     {%- endif -%}
   {%- endfor -%}
 
-  {{ log("(tbm_incremental) Contract columns validation successfull") }}
+  {{ log("(tbm_incremental) Contract columns validation successful") }}
   {{ return(true) }}
 
 {%- endmacro %}
 
 
+{#-- Verify filter key values are not null --#}
 {% macro tbmacro_validate_value_list(values_list=[]) -%}
-  {#-- Validate values list that has got from values in columns defined in 'tbm_filter_key' --#}
 
   {% set invalid_value -%}
     tbm_incremental error
