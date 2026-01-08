@@ -5,3 +5,4 @@ integration_tests:
       type: spark
       method: session
       schema: integration_tests
+      host: localhost

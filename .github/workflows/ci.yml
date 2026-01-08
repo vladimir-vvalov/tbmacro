@@ -32,9 +32,7 @@ jobs:
       - name: Install dbt and dependencies
         run: |
           pip install --upgrade pip
-          pip install dbt-core==${{ matrix.dbt-version }}
-          pip install "dbt-spark[PyHive]==${{ matrix.dbt-version }}"
-          pip install pyspark
+          pip install "dbt-spark[PyHive]==${{ matrix.dbt-version }}" pyspark
 
       - name: Install package dependencies
         run: |
