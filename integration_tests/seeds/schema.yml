@@ -1,0 +1,22 @@
+version: 2
+
+seeds:
+  - name: test_data
+    description: "Test seed data for integration tests"
+    config:
+      column_types:
+        id: integer
+        value: integer
+        created_at: date
+    columns:
+      - name: id
+        description: "Unique identifier"
+        data_type: integer
+
+      - name: value
+        description: "Test value"
+        data_type: integer
+
+      - name: created_at
+        description: "Creation date"
+        data_type: date
