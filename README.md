@@ -1,8 +1,8 @@
 # tbmacro
-custom macros for advanced dbt-spark usage
+Custom macros for advanced dbt-spark usage
 
 ### materialization
-macros for custom materialization 'tbm_incremental'
+Macros for custom materialization 'tbm_incremental'
 
 ### database
 - tbmacro_check_relation - check relation in database by relation or model,schema
