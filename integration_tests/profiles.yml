@@ -1,0 +1,7 @@
+integration_tests:
+  target: ci
+  outputs:
+    ci:
+      type: spark
+      method: session
+      schema: integration_tests

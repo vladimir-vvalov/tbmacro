@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.2 - (2026-01-08)
+
+### Testing
+* add GitHub Actions CI/CD workflow for automated testing
+* add integration tests structure
+* add pre-commit hooks
+* update .gitignore
+
 ## 0.5.1 - (2026-01-07)
 
 ### Fix

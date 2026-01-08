@@ -1,0 +1,52 @@
+name: Package Integration Tests
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        dbt-version: ['1.8.*', '1.9.*']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Install dbt and dependencies
+        run: |
+          pip install --upgrade pip
+          pip install dbt-core==${{ matrix.dbt-version }}
+          pip install "dbt-spark[PyHive]==${{ matrix.dbt-version }}"
+          pip install pyspark
+
+      - name: Install package dependencies
+        run: |
+          cd integration_tests
+          dbt deps
+
+      - name: Verify macros syntax
+        run: |
+          cd integration_tests
+          dbt parse --target ci
+
+      - name: Run integration tests
+        run: |
+          cd integration_tests
+          dbt build --target ci

@@ -1,21 +1,21 @@
 {#-- Route incremental strategy execution to appropriate implementation --#}
 {% macro tbmacro_get_incremental_sql(source, target, existing, tbm_config, filter, filter_merge) %}
-  {%- set strategy = tbm_config.strategy -%}
-  {%- if strategy in ['append', 'delete+insert'] -%}
+{%- set strategy = tbm_config.strategy -%}
+{%- if strategy in ['append', 'delete+insert'] -%}
     {#-- Insert new records into existing table without updating or overwriting --#}
     {{ tbmacro.tbmacro_get_insert_into_sql(source, target) }}
   {%- elif strategy == 'insert_overwrite' -%}
-    {#-- Insert or overwrite all partitions existing in selection --#}
-    {%- if tbm_config.mode is not none and not filter -%}
+{#-- Insert or overwrite all partitions existing in selection --#}
+{%- if tbm_config.mode is not none and not filter -%}
       {#-- Append empty selection (selection is empty but tbm_filter_mode is configured) --#}
       {{ tbmacro.tbmacro_get_insert_into_sql(source, target) }}
     {%- else -%}
       {{ get_insert_overwrite_sql(source, target, existing) }}
     {%- endif -%}
   {%- elif strategy in ['merge'] -%}
-    {#-- Check if update is needed using tbm_update_changes_only configuration --#}
-    {%- set check_update_changes_only = tbmacro.tbmacro_check_update_changes_only(target, source, tbm_config, filter) -%}
-    {%- if check_update_changes_only == false -%}
+{#-- Check if update is needed using tbm_update_changes_only configuration --#}
+{%- set check_update_changes_only = tbmacro.tbmacro_check_update_changes_only(target, source, tbm_config, filter) -%}
+{%- if check_update_changes_only == false -%}
       {#-- Merge all columns for data sources implementing MERGE INTO (Spark) --#}
       {{ tbmacro.tbmacro_get_merge_sql(target, source, tbm_config, filter_merge, dest_columns=none) }}
     {%- else -%}
@@ -33,9 +33,9 @@
 
 {#-- Generate INSERT INTO statement --#}
 {% macro tbmacro_get_insert_into_sql(source_relation, target_relation) %}
-  {%- set dest_columns = adapter.get_columns_in_relation(target_relation) -%}
-  {%- set dest_cols_csv = dest_columns | map(attribute='quoted') | join(', ') -%}
-  insert into table {{ target_relation }} ({{dest_cols_csv}})
+{%- set dest_columns = adapter.get_columns_in_relation(target_relation) -%}
+{%- set dest_cols_csv = dest_columns | map(attribute='quoted') | join(', ') -%}
+insert into table {{ target_relation }} ({{dest_cols_csv}})
   select {{dest_cols_csv}} from {{ source_relation }}
 
 {% endmacro %}
@@ -51,127 +51,127 @@
 
 {#-- Dispatch for MERGE statement --#}
 {% macro tbmacro_get_merge_sql(target, source, tbm_config, filter, dest_columns) -%}
-  {{ adapter.dispatch('tbmacro_get_merge_sql', 'tbmacro')(target, source, tbm_config, filter, dest_columns) }}
+{{ adapter.dispatch('tbmacro_get_merge_sql', 'tbmacro')(target, source, tbm_config, filter, dest_columns) }}
 {%- endmacro %}
 
 {#-- Generate MERGE statement for Spark with update/insert/delete logic --#}
 {% macro spark__tbmacro_get_merge_sql(target, source, tbm_config, filter, dest_columns) -%}
-  {%- set unique_key = tbm_config.unique_key -%}
-  {%- set merge_update_columns = tbm_config.merge_update_columns -%}
-  {%- set merge_exclude_columns = tbm_config.merge_exclude_columns -%}
-  {%- set predicates = tbm_config.incremental_predicates -%}
-  {%- set operator = tbm_config.operator -%}
-  {%- set sql_header = config.get('sql_header', none) -%}
+{%- set unique_key = tbm_config.unique_key -%}
+{%- set merge_update_columns = tbm_config.merge_update_columns -%}
+{%- set merge_exclude_columns = tbm_config.merge_exclude_columns -%}
+{%- set predicates = tbm_config.incremental_predicates -%}
+{%- set operator = tbm_config.operator -%}
+{%- set sql_header = config.get('sql_header', none) -%}
 
-  {#-- Retrieve dest_columns for merge_exclude_columns processing, default to all columns --#}
-  {%- set dest_columns = adapter.get_columns_in_relation(target) -%}
-  {#-- Filter columns to be updated based on configuration --#}
-  {%- set update_columns = get_merge_update_columns(merge_update_columns, merge_exclude_columns, dest_columns) -%}
+{#-- Retrieve dest_columns for merge_exclude_columns processing, default to all columns --#}
+{%- set dest_columns = adapter.get_columns_in_relation(target) -%}
+{#-- Filter columns to be updated based on configuration --#}
+{%- set update_columns = get_merge_update_columns(merge_update_columns, merge_exclude_columns, dest_columns) -%}
 
-  {{ sql_header if sql_header is not none }}
+{{ sql_header if sql_header is not none }}
 
   merge into {{ target }} as DBT_INTERNAL_DEST
       using {{ source }} as DBT_INTERNAL_SOURCE
       on true
         {% if unique_key is not none and unique_key -%}
-        {% for item in unique_key|unique|list -%}
-          and DBT_INTERNAL_SOURCE.`{{ item }}` = DBT_INTERNAL_DEST.`{{ item }}`
+{% for item in unique_key|unique|list -%}
+and DBT_INTERNAL_SOURCE.`{{ item }}` = DBT_INTERNAL_DEST.`{{ item }}`
         {% endfor %}
-        {%- endif %}
-        {% if predicates is not none and predicates -%}
-        {% for item in predicates -%}
-          and {{ item }}
-        {% endfor %}
-        {%- endif %}
-        {{ filter }}
+{%- endif %}
+{% if predicates is not none and predicates -%}
+{% for item in predicates -%}
+and {{ item }}
+{% endfor %}
+{%- endif %}
+{{ filter }}
 
       when matched
       then update set
         {% if update_columns -%}
-          {%- for column_name in update_columns %}
-            {{ column_name }} = DBT_INTERNAL_SOURCE.{{ column_name }}
-            {%- if not loop.last %}, {%- endif %}
+{%- for column_name in update_columns %}
+{{ column_name }} = DBT_INTERNAL_SOURCE.{{ column_name }}
+{%- if not loop.last %}, {%- endif %}
           {%- endfor %}
         {%- else -%}
-          {%- for column_name in dest_columns %}
-            {{ column_name.quoted }} = DBT_INTERNAL_SOURCE.{{ column_name.quoted }}
-            {%- if not loop.last %}, {%- endif %}
-          {%- endfor %}
-        {% endif %}
+{%- for column_name in dest_columns %}
+{{ column_name.quoted }} = DBT_INTERNAL_SOURCE.{{ column_name.quoted }}
+{%- if not loop.last %}, {%- endif %}
+{%- endfor %}
+{% endif %}
 
       when not matched
         {% if predicates is not none and predicates -%}
-        {% for item in predicates -%}
-          {%- if 'DBT_INTERNAL_SOURCE' in item and 'DBT_INTERNAL_DEST' not in item -%}
-          and {{ item }}
-          {%- endif -%}
-        {% endfor %}
-        {%- endif %}
+{% for item in predicates -%}
+{%- if 'DBT_INTERNAL_SOURCE' in item and 'DBT_INTERNAL_DEST' not in item -%}
+and {{ item }}
+{%- endif -%}
+{% endfor %}
+{%- endif %}
         then insert
           ({% for column_name in dest_columns -%}
-            {{ column_name.quoted }}{%- if not loop.last %}, {%- endif %}
-          {%- endfor %})
+{{ column_name.quoted }}{%- if not loop.last %}, {%- endif %}
+{%- endfor %})
           values
           ({% for column_name in dest_columns -%}
-            DBT_INTERNAL_SOURCE.{{ column_name.quoted }}{%- if not loop.last %}, {%- endif %}
-          {%- endfor %})
+DBT_INTERNAL_SOURCE.{{ column_name.quoted }}{%- if not loop.last %}, {%- endif %}
+{%- endfor %})
 
       {% if operator is not none and operator -%}
       when not matched by source
         {% if predicates is not none and predicates -%}
-        {% for item in predicates -%}
-          {%- if 'DBT_INTERNAL_SOURCE' not in item and 'DBT_INTERNAL_DEST' in item -%}
-          and {{ item }}
-          {%- endif -%}
-        {% endfor %}
-        {%- endif %}
-        {{ filter }}
+{% for item in predicates -%}
+{%- if 'DBT_INTERNAL_SOURCE' not in item and 'DBT_INTERNAL_DEST' in item -%}
+and {{ item }}
+{%- endif -%}
+{% endfor %}
+{%- endif %}
+{{ filter }}
       then
         {{ operator }}
-      {% endif %}
+{% endif %}
 
 {%- endmacro %}
 
 
 {#-- Check if MERGE would produce any updates (optimization to skip unnecessary merge) --#}
 {% macro tbmacro_check_update_changes_only(target, source, tbm_config, filter) -%}
-  {%- set update_changes_only = tbm_config.update_changes_only -%}
-  {%- if update_changes_only == true and execute -%}
-    {%- set unique_key = tbm_config.unique_key -%}
-    {%- set include_check_columns = tbm_config.include_check_columns -%}
-    {%- set exclude_columns = tbm_config.exclude_columns -%}
+{%- set update_changes_only = tbm_config.update_changes_only -%}
+{%- if update_changes_only == true and execute -%}
+{%- set unique_key = tbm_config.unique_key -%}
+{%- set include_check_columns = tbm_config.include_check_columns -%}
+{%- set exclude_columns = tbm_config.exclude_columns -%}
 
-    {#-- Retrieve dest_columns for merge_exclude_columns processing --#}
-    {%- set dest_columns = adapter.get_columns_in_relation(target) -%}
-    {#-- Determine columns to check based on tbm_update_changes_only configuration --#}
-    {%- set update_checked_columns = tbmacro.tbmacro_get_merge_update_columns(tbm_config, dest_columns) -%}
+{#-- Retrieve dest_columns for merge_exclude_columns processing --#}
+{%- set dest_columns = adapter.get_columns_in_relation(target) -%}
+{#-- Determine columns to check based on tbm_update_changes_only configuration --#}
+{%- set update_checked_columns = tbmacro.tbmacro_get_merge_update_columns(tbm_config, dest_columns) -%}
 
-    {#-- Calculate the number of changed rows --#}
-    {%- set sql -%}
+{#-- Calculate the number of changed rows --#}
+{%- set sql -%}
     select count(*) as _dbt__tbmacro_check_count
-    from (  
+    from (
         select *
         from {{ target }}
-        {#-- Filter target data when tbm_filter_merge_check is enabled --#}
-        {%- if tbm_config.merge_check == true and tbm_config.mode is not none and tbm_config.mode %}
+{#-- Filter target data when tbm_filter_merge_check is enabled --#}
+{%- if tbm_config.merge_check == true and tbm_config.mode is not none and tbm_config.mode %}
         where true
-          {%- if filter %}
+{%- if filter %}
           {{ filter }}
           {%- else %}
           and false
-          {%- endif %}
-        {%- endif %}
+{%- endif %}
+{%- endif %}
     ) as DBT_INTERNAL_DEST
     full join {{ source }} as DBT_INTERNAL_SOURCE
       on true
       {% if unique_key is not none and unique_key -%}
-      {% for item in unique_key|unique|list -%}
-        and DBT_INTERNAL_SOURCE.`{{ item }}` = DBT_INTERNAL_DEST.`{{ item }}`
+{% for item in unique_key|unique|list -%}
+and DBT_INTERNAL_SOURCE.`{{ item }}` = DBT_INTERNAL_DEST.`{{ item }}`
       {% endfor %}
-      {%- endif %}
+{%- endif %}
     where true
       and (
-      {%- for column_name in update_checked_columns|unique|list %}
+{%- for column_name in update_checked_columns|unique|list %}
         {{ "or" if not loop.first }} not coalesce(DBT_INTERNAL_DEST.{{ column_name }} = DBT_INTERNAL_SOURCE.{{ column_name }}, coalesce(DBT_INTERNAL_DEST.{{ column_name }}, DBT_INTERNAL_SOURCE.{{ column_name }}) is null, false)
       {%- endfor %}
       )

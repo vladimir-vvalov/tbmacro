@@ -1,78 +1,78 @@
 {#-- Parse and validate all tbm_* configuration parameters with defaults and error handling --#}
 {% macro tbmacro_validate_config() -%}
 
-  {#-- origin --#}
-  {%- set raw_file_format = config.get('file_format', default='delta') -%}
-  {%- set raw_strategy = config.get('incremental_strategy') or 'append' -%}
-  {%- set raw_partition_by = config.get('partition_by', none) or none -%}
-  {%- set raw_unique_key = config.get('unique_key', none) or none -%}
-  {%- set raw_merge_update_columns = config.get('merge_update_columns') -%}
-  {%- set raw_merge_exclude_columns = config.get('merge_exclude_columns') -%}
-  {%- set raw_incremental_predicates = config.get('predicates', none) or config.get('incremental_predicates', none) or none -%}
+    {#-- origin --#}
+    {%- set raw_file_format = config.get('file_format', default='delta') -%}
+    {%- set raw_strategy = config.get('incremental_strategy') or 'append' -%}
+    {%- set raw_partition_by = config.get('partition_by', none) or none -%}
+    {%- set raw_unique_key = config.get('unique_key', none) or none -%}
+    {%- set raw_merge_update_columns = config.get('merge_update_columns') -%}
+    {%- set raw_merge_exclude_columns = config.get('merge_exclude_columns') -%}
+    {%- set raw_incremental_predicates = config.get('predicates', none) or config.get('incremental_predicates', none) or none -%}
 
-  {#-- tbm common --#}
-  {%- set raw_tbm_contract = config.get('tbm_contract', default=false) or false -%}
-  {%- set raw_tbm_cast_columns = config.get('tbm_cast_columns', false) or false -%}
-  {%- set contract_description = config.get('tbm_contract_description', 'warn') or 'warn' -%}
-  {%- set limit = config.get('limit', none) or none -%}
-  {%- set trap_for_bug = config.get('tbm_trap_for_bug', true) or true -%}
+    {#-- tbm common --#}
+    {%- set raw_tbm_contract = config.get('tbm_contract', default=false) or false -%}
+    {%- set raw_tbm_cast_columns = config.get('tbm_cast_columns', false) or false -%}
+    {%- set contract_description = config.get('tbm_contract_description', 'warn') or 'warn' -%}
+    {%- set limit = config.get('limit', none) or none -%}
+    {%- set trap_for_bug = config.get('tbm_trap_for_bug', true) or true -%}
 
-  {#-- tbm filter --#}
-  {%- set mode = config.get('tbm_filter_mode', none) or none -%}
-  {%- set raw_key = config.get('tbm_filter_key', none) or none -%}
-  {%- set from = config.get('tbm_filter_from', none) or none -%}
-  {%- set till = config.get('tbm_filter_till', none) or none -%}
-  {%- set quote_values = config.get('tbm_filter_quote_values') or true -%}
-  {%- set merge_check = config.get('tbm_filter_merge_check') or false -%}
+    {#-- tbm filter --#}
+    {%- set mode = config.get('tbm_filter_mode', none) or none -%}
+    {%- set raw_key = config.get('tbm_filter_key', none) or none -%}
+    {%- set from = config.get('tbm_filter_from', none) or none -%}
+    {%- set till = config.get('tbm_filter_till', none) or none -%}
+    {%- set quote_values = config.get('tbm_filter_quote_values') or true -%}
+    {%- set merge_check = config.get('tbm_filter_merge_check') or false -%}
 
-  {#-- tbm merge --#}
-  {%- set update_changes_only = config.get('tbm_update_changes_only') or false -%}
-  {%- set operator = config.get('tbm_merge_operator', none) or none -%}
-  {%- set raw_include_check_columns = config.get('tbm_include_check_columns', none) or none -%}
-  {%- set raw_exclude_check_columns = config.get('tbm_exclude_check_columns', none) or none -%}
+    {#-- tbm merge --#}
+    {%- set update_changes_only = config.get('tbm_update_changes_only') or false -%}
+    {%- set operator = config.get('tbm_merge_operator', none) or none -%}
+    {%- set raw_include_check_columns = config.get('tbm_include_check_columns', none) or none -%}
+    {%- set raw_exclude_check_columns = config.get('tbm_exclude_check_columns', none) or none -%}
 
-  {#-- allowed lists --#}
-  {%- set allow_modes = ['values', 'range', 'ranged_values'] -%}
-  {%- set allow_contract_description = ['ignore', 'warn', 'error'] -%}
-  {%- set allow_operator = ['delete'] -%}
+    {#-- allowed lists --#}
+    {%- set allow_modes = ['values', 'range', 'ranged_values'] -%}
+    {%- set allow_contract_description = ['ignore', 'warn', 'error'] -%}
+    {%- set allow_operator = ['delete'] -%}
 
-  {#-- error messages --#}
-  {% set invalid_contract_description_msg -%}
+    {#-- error messages --#}
+    {% set invalid_contract_description_msg -%}
     tbm_incremental error
     Invalid tbm_contract_description: '{{ contract_description }}'
     Set one of these: none or one of {{ allow_contract_description }}
-  {%- endset %}
-  {% set invalid_filter_mode_msg -%}
+    {%- endset %}
+    {% set invalid_filter_mode_msg -%}
     tbm_incremental error
     Invalid tbm_filter_mode: '{{ mode }}'
     Set one of these: none or one of {{ allow_modes }}
-  {%- endset %}
-  {% set invalid_delete_insert_msg -%}
+    {%- endset %}
+    {% set invalid_delete_insert_msg -%}
     tbm_incremental error
     Strategy 'delete+insert' is not allowed if 'tbm_filter_mode' is none
-  {%- endset %}
-  {% set invalid_key_msg -%}
+    {%- endset %}
+    {% set invalid_key_msg -%}
     tbm_incremental error
     'tbm_filter_key' not found for 'tbm_filter_mode' = '{{ mode }}'
-  {%- endset %}
-  {% set invalid_merge_operator_msg -%}
+    {%- endset %}
+    {% set invalid_merge_operator_msg -%}
     tbm_incremental error
     Invalid merge operator: {{ operator }}
     Set one of these: none or one of {{ allow_operator }}
-  {%- endset %}
-  {% set invalid_merge_check_columns_msg -%}
+    {%- endset %}
+    {% set invalid_merge_check_columns_msg -%}
     tbm_incremental error
     Model cannot specify 'include_check_columns' and 'exclude_check_columns'. Please update model to use only one config
-  {%- endset %}
-  {% set invalid_merge_condition_msg -%}
+    {%- endset %}
+    {% set invalid_merge_condition_msg -%}
     tbm_incremental error
     Not defined merge conditions
     Set one or more configs of: 'unique_key', 'incremental_predicates', 'tbm_filter_key'
-  {%- endset %}
+    {%- endset %}
 
-  {#-- processing some raw parametes --#}
-  {%- set key = [] -%}
-  {%- if not(raw_key is not none and mode is none) -%}
+    {#-- processing some raw parametes --#}
+    {%- set key = [] -%}
+    {%- if not(raw_key is not none and mode is none) -%}
     {%- if raw_key is string -%}
       {% do key.append(raw_key) %}
     {%- else -%}
@@ -80,95 +80,103 @@
     {%- endif -%}
   {%- endif -%}
 
-  {%- set unique_key = [] -%}
-  {%- if raw_unique_key is string -%}
+    {%- set unique_key = [] -%}
+    {%- if raw_unique_key is string -%}
     {% do unique_key.append(raw_unique_key) %}
   {%- else -%}
     {% set unique_key = raw_unique_key %}
   {%- endif -%}
 
-  {%- set merge_update_columns = [] -%}
-  {%- if raw_merge_update_columns is string -%}
+    {%- set merge_update_columns = [] -%}
+    {%- if raw_merge_update_columns is string -%}
     {% do merge_update_columns.append(raw_merge_update_columns) %}
   {%- else -%}
     {% set merge_update_columns = raw_merge_update_columns %}
   {%- endif -%}
 
-  {%- set merge_exclude_columns = [] -%}
-  {%- if raw_merge_exclude_columns is string -%}
+    {%- set merge_exclude_columns = [] -%}
+    {%- if raw_merge_exclude_columns is string -%}
     {% do merge_exclude_columns.append(raw_merge_exclude_columns) %}
   {%- else -%}
     {% set merge_exclude_columns = raw_merge_exclude_columns %}
   {%- endif -%}
 
-  {%- set include_check_columns = [] -%}
-  {%- if not(raw_include_check_columns is not none and update_changes_only is none) -%}
+    {%- set include_check_columns = [] -%}
+    {%- if not(raw_include_check_columns is not none and update_changes_only is none) -%}
+
     {%- if raw_include_check_columns is string -%}
       {% do include_check_columns.append(raw_include_check_columns) %}
     {%- else -%}
       {% set include_check_columns = raw_include_check_columns %}
     {%- endif -%}
-  {%- endif -%}
 
-  {%- set exclude_check_columns = [] -%}
-  {%- if not(exclude_check_columns is not none and update_changes_only is none) -%}
+    {%- endif -%}
+
+    {%- set exclude_check_columns = [] -%}
+    {%- if not(exclude_check_columns is not none and update_changes_only is none) -%}
+
     {%- if raw_exclude_check_columns is string -%}
       {% do exclude_check_columns.append(raw_exclude_check_columns) %}
     {%- else -%}
       {% set exclude_check_columns = raw_exclude_check_columns %}
     {%- endif -%}
-  {%- endif -%}
 
-  {%- set partition_by = [] -%}
-  {%- if raw_partition_by is string -%}
+    {%- endif -%}
+
+    {%- set partition_by = [] -%}
+    {%- if raw_partition_by is string -%}
     {% do partition_by.append(raw_partition_by) %}
   {%- else -%}
     {% set partition_by = raw_partition_by %}
   {%- endif -%}
 
-  {%- set incremental_predicates = [] -%}
-  {%- if raw_incremental_predicates is string -%}
+    {%- set incremental_predicates = [] -%}
+    {%- if raw_incremental_predicates is string -%}
     {% do incremental_predicates.append(raw_incremental_predicates) %}
   {%- else -%}
     {% set incremental_predicates = raw_incremental_predicates %}
   {%- endif -%}
 
-  {#-- validate --#}
-  {%- set file_format = tbmacro.tbmacro_validate_file_format(raw_file_format) -%}
-  {%- set strategy = tbmacro.tbmacro_validate_strategy(raw_strategy, file_format) -%}
+    {#-- validate --#}
+    {%- set file_format = tbmacro.tbmacro_validate_file_format(raw_file_format) -%}
+    {%- set strategy = tbmacro.tbmacro_validate_strategy(raw_strategy, file_format) -%}
 
-  {%- if contract_description not in allow_contract_description and contract_description is not none -%}
+    {%- if contract_description not in allow_contract_description and contract_description is not none -%}
+
     {% do exceptions.raise_compiler_error(invalid_contract_description_msg) %}
-  {%- endif -%}
 
-  {%- set tbm_contract = tbmacro.tbmacro_validate_contract(raw_tbm_contract, contract_description, model) -%}
-  {%- set cast_columns = raw_tbm_cast_columns if tbm_contract==true else false -%}
+    {%- endif -%}
 
-  {%- if mode not in allow_modes and mode is not none -%}
+    {%- set tbm_contract = tbmacro.tbmacro_validate_contract(raw_tbm_contract, contract_description, model) -%}
+    {%- set cast_columns = raw_tbm_cast_columns if tbm_contract==true else false -%}
+
+    {%- if mode not in allow_modes and mode is not none -%}
     {% do exceptions.raise_compiler_error(invalid_filter_mode_msg) %}
   {%- endif -%}
 
-  {%- if mode is not none and not key -%}
+    {%- if mode is not none and not key -%}
     {% do exceptions.raise_compiler_error(invalid_key_msg) %}
   {%- endif -%}
 
-  {%- if strategy == 'delete+insert' and mode is none -%}
+    {%- if strategy == 'delete+insert' and mode is none -%}
     {% do exceptions.raise_compiler_error(invalid_delete_insert_msg) %}
   {%- endif -%}
 
-  {%- if operator is not none and operator not in allow_operator -%}
+    {%- if operator is not none and operator not in allow_operator -%}
     {% do exceptions.raise_compiler_error(invalid_merge_operator_msg) %}
   {%- endif -%}
 
-  {%- if include_check_columns and exclude_check_columns -%}
+    {%- if include_check_columns and exclude_check_columns -%}
     {{ exceptions.raise_compiler_error(invalid_merge_check_columns_msg)}}
   {%- endif -%}
 
-  {%- if strategy == 'merge' and (unique_key is none and incremental_predicates is none and key is none) -%}
-    {{ exceptions.raise_compiler_error(invalid_merge_condition_msg)}}
-  {%- endif -%}
+    {%- if strategy == 'merge' and (unique_key is none and incremental_predicates is none and key is none) -%}
 
-  {#-- make result dictionary --#}
+    {{ exceptions.raise_compiler_error(invalid_merge_condition_msg)}}
+
+    {%- endif -%}
+
+    {#-- make result dictionary --#}
   {%- set return_dict = {
     'file_format': file_format,
     'strategy': strategy,
@@ -197,92 +205,94 @@
     'exclude_check_columns': exclude_check_columns,
    } -%}
 
-  {{ return(return_dict) }}
+    {{ return(return_dict) }}
 
 {%- endmacro %}
 
 
 {#-- Validate file format is supported --#}
 {% macro tbmacro_validate_file_format(raw_file_format) -%}
-  {%- set accepted_formats = ['delta'] -%}
+    {%- set accepted_formats = ['delta'] -%}
 
-  {% set invalid_file_format_msg -%}
+    {% set invalid_file_format_msg -%}
     tbm_incremental error
     Invalid file format provided: {{ raw_file_format }}
     Expected one of: {{ accepted_formats | join(', ') }}
-  {%- endset %}
+    {%- endset %}
 
-  {% if raw_file_format not in accepted_formats %}
+    {% if raw_file_format not in accepted_formats %}
     {% do exceptions.raise_compiler_error(invalid_file_format_msg) %}
   {% endif %}
 
-  {% do return(raw_file_format) %}
+    {% do return(raw_file_format) %}
 {%- endmacro %}
 
 
 {#-- Validate incremental strategy is supported --#}
 {% macro tbmacro_validate_strategy(raw_strategy, file_format) -%}
-  {%- set accepted_strategies = ['append', 'merge', 'insert_overwrite', 'delete+insert'] -%}
+    {%- set accepted_strategies = ['append', 'merge', 'insert_overwrite', 'delete+insert'] -%}
 
-  {% set invalid_strategy_msg -%}
+    {% set invalid_strategy_msg -%}
     tbm_incremental error
     Invalid incremental strategy provided: {{ raw_strategy }}
     Expected one of: {{ accepted_strategies }}
-  {%- endset %}
+    {%- endset %}
 
-  {% if raw_strategy not in accepted_strategies %}
+    {% if raw_strategy not in accepted_strategies %}
     {% do exceptions.raise_compiler_error(invalid_strategy_msg) %}
   {% endif %}
 
-  {% do return(raw_strategy) %}
+    {% do return(raw_strategy) %}
 {%- endmacro %}
 
 
 {#-- Validate tbm_contract configuration and enforce schema definitions --#}
 {% macro tbmacro_validate_contract(raw_tbm_contract, contract_description, model = {}) -%}
-  {%- if not raw_tbm_contract -%}
-    {% do return(raw_tbm_contract) %}
-  {%- endif -%}
+    {%- if not raw_tbm_contract -%}
+        {% do return(raw_tbm_contract) %}
+    {%- endif -%}
 
-  {% set no_yml_msg -%}
+    {% set no_yml_msg -%}
     tbm_contract error
     '{{ model.name }}' YML not found
     Create YML and describe name, description and data_type for each column
     Describe constraints if you need
-  {%- endset %}
+    {%- endset %}
 
-  {% set no_model_description_msg -%}
+    {% set no_model_description_msg -%}
     tbm_contract error
     Description for model '{{ model.name }}' YML not found
     Describe description for model
-  {%- endset %}
+    {%- endset %}
 
-  {% set invalid_description_msg -%}
+    {% set invalid_description_msg -%}
     tbm_contract error
     When tbm_contract = true, all columns must have description
-    description not found for{{' '}} 
-  {%- endset %}
+    description not found for{{' '}}
+    {%- endset %}
 
-  {% set invalid_data_type_msg -%}
+    {% set invalid_data_type_msg -%}
     tbm_contract error
     When tbm_contract = true, all columns must have datatype
-    data_type not found for column: 
-  {%- endset %}
+    data_type not found for column:
+    {%- endset %}
 
-  {% if not model.columns %}
+    {% if not model.columns %}
     {% do exceptions.raise_compiler_error(no_yml_msg) %}
   {% endif %}
 
-  {% if (model.description is none or not model.description) and contract_description in ['warn', 'error'] %}
+    {% if (model.description is none or not model.description) and contract_description in ['warn', 'error'] %}
+
     {% if contract_description == 'error' %}
       {% do exceptions.raise_compiler_error(no_model_description_msg) %}
     {% else %}
       {% do exceptions.warn("Warning: "~no_model_description_msg) %}
     {% endif %}
-  {% endif %}
 
-  {%- set warn_count = [] -%}
-  {%- for key, value in model.columns.items() %}
+    {% endif %}
+
+    {%- set warn_count = [] -%}
+    {%- for key, value in model.columns.items() %}
     {% if (value.description is none or not value.description) and contract_description in ['warn', 'error'] %}
       {% if contract_description == 'error' %}
         {% do exceptions.raise_compiler_error(invalid_description_msg~key) %}
@@ -295,53 +305,53 @@
     {% endif %}
   {%- endfor %}
 
-  {%- if warn_count | count() > 0 -%}
+    {%- if warn_count | count() > 0 -%}
     {% do exceptions.warn("Warning: "~invalid_description_msg~warn_count) %}
   {%- endif -%}
 
-  {{ log("(tbm_incremental) Contract validation successful") }}
+    {{ log("(tbm_incremental) Contract validation successful") }}
 
-  {% do return(raw_tbm_contract) %}
+    {% do return(raw_tbm_contract) %}
 {%- endmacro %}
 
 
 {#-- Verify table columns match schema definition in contract mode --#}
 {% macro tbmacro_validate_contract_columns(target, on_schema_change, model = {}) -%}
-  {%- if on_schema_change not in ['fail', 'ignore'] and on_schema_change -%}
-    {{ return(false) }}
-  {%- endif -%}
+    {%- if on_schema_change not in ['fail', 'ignore'] and on_schema_change -%}
+        {{ return(false) }}
+    {%- endif -%}
 
-  {#-- Match columns in the table with columns in the YML --#}
-  {%- set raw_dest_columns = adapter.get_columns_in_relation(target) -%}
-  {%- set dest_columns = [] -%}
-  {%- for item in raw_dest_columns -%}
-    {%- do dest_columns.append(item.column) -%}
-  {%- endfor -%}
-  {%- set model_columns = model.columns.keys() | list -%}
-  {% set only_in_dest = dest_columns | reject('in', model_columns) | list -%}
-  {% set only_in_model = model_columns | reject('in', dest_columns) | list %}
+    {#-- Match columns in the table with columns in the YML --#}
+    {%- set raw_dest_columns = adapter.get_columns_in_relation(target) -%}
+    {%- set dest_columns = [] -%}
+    {%- for item in raw_dest_columns -%}
+        {%- do dest_columns.append(item.column) -%}
+    {%- endfor -%}
+    {%- set model_columns = model.columns.keys() | list -%}
+    {% set only_in_dest = dest_columns | reject('in', model_columns) | list -%}
+    {% set only_in_model = model_columns | reject('in', dest_columns) | list %}
 
-  {#-- Validate table columns in the YML --#}
-  {%- if only_in_dest -%}
+    {#-- Validate table columns in the YML --#}
+    {%- if only_in_dest -%}
       {% set invalid_yml_1 -%}
       Column {{ only_in_dest | tojson }} was not described in YML
       {%- endset -%}
   {%- endif -%}
 
-  {#-- Validate YML columns in the table --#}
-  {%- if only_in_model -%}
+    {#-- Validate YML columns in the table --#}
+    {%- if only_in_model -%}
       {% set invalid_yml_2 -%}
       Column {{ only_in_model | tojson }} does not exist in table
       {%- endset -%}
   {%- endif -%}
 
-  {#-- Raise error if any column mismatch --#}
-  {%- if only_in_dest or only_in_model -%}
+    {#-- Raise error if any column mismatch --#}
+    {%- if only_in_dest or only_in_model -%}
     {% do exceptions.raise_compiler_error('\ttbm_contract error\n\t\t' ~ invalid_yml_1 ~ '\n\t\t' ~ invalid_yml_2) %}
   {%- endif -%}
 
-  {#-- Validate data types --#}
-  {%- for item in raw_dest_columns -%}
+    {#-- Validate data types --#}
+    {%- for item in raw_dest_columns -%}
     {%- if item.data_type != model.columns[item.column].data_type -%}
       {% set invalid_yml -%}
       tbm_contract error
@@ -353,8 +363,8 @@
     {%- endif -%}
   {%- endfor -%}
 
-  {{ log("(tbm_incremental) Contract columns validation successful") }}
-  {{ return(true) }}
+    {{ log("(tbm_incremental) Contract columns validation successful") }}
+    {{ return(true) }}
 
 {%- endmacro %}
 
@@ -362,17 +372,17 @@
 {#-- Verify filter key values are not null --#}
 {% macro tbmacro_validate_value_list(values_list=[]) -%}
 
-  {% set invalid_value -%}
+    {% set invalid_value -%}
     tbm_incremental error
     Null values not allowed in columns defined in 'tbm_filter_key'
-  {%- endset %}
+    {%- endset %}
 
-  {%- for item in values_list -%}
+    {%- for item in values_list -%}
     {% if not item %}
       {{ print(item) }}
       {% do exceptions.raise_compiler_error(invalid_value) %}
     {% endif %}
   {%- endfor -%}
 
-  {% do return(values_list) %}
+    {% do return(values_list) %}
 {%- endmacro %}
