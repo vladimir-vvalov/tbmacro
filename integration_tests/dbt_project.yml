@@ -2,7 +2,7 @@ name: 'integration_tests'
 version: '1.0.0'
 config-version: 2
 
-profile: 'integration_tests'
+profile: 'integration_tests2'
 
 model-paths: ["models"]
 seed-paths: ["seeds"]
