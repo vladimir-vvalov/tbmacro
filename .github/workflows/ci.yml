@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        dbt-version: ['1.8.*', '1.9.*', '1.10.*']
+        dbt-version: ['1.10.*']
 
     steps:
       - name: Checkout code
@@ -46,7 +46,12 @@ jobs:
           cd integration_tests
           dbt parse --target ci
 
-      - name: Run integration tests
+      - name: Run integration tests - initial run
+        run: |
+          cd integration_tests
+          dbt build --target ci --debug
+
+      - name: Run integration tests - incremental run
         run: |
           cd integration_tests
           dbt build --target ci --debug

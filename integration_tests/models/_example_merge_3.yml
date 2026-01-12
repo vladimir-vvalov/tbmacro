@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: example_merge_3
+    description: "Test custom tbm_incremental merge with 'ranged_values' mode, delete and check changes"
+    columns:
+      - name: id
+        description: "id"
+        data_type: integer
+        constraints:
+          - type: not_null
+
+      - name: value
+        description: "value"
+        data_type: integer
+
+      - name: created_date
+        description: "created_date"
+        data_type: date
+        constraints:
+          - type: not_null
+
+      - name: partition_month
+        description: "partition_month"
+        data_type: integer
+        constraints:
+          - type: not_null
+
+      - name: modified_at
+        description: "modified_at"
+        data_type: timestamp

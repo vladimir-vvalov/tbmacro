@@ -155,11 +155,11 @@ and {{ item }}
 {#-- Filter target data when tbm_filter_merge_check is enabled --#}
 {%- if tbm_config.merge_check == true and tbm_config.mode is not none and tbm_config.mode %}
         where true
-{%- if filter %}
-          {{ filter }}
-          {%- else %}
-          and false
-{%- endif %}
+  {%- if filter %}
+            {{ filter }}
+            {%- else %}
+            and false
+  {%- endif %}
 {%- endif %}
     ) as DBT_INTERNAL_DEST
     full join {{ source }} as DBT_INTERNAL_SOURCE

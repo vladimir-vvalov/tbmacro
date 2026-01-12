@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.5.3 - (2026-01-11)
+
+### Feature
+* add `tbmacro_is_incremental()` macro for checking incremental mode with custom materializations
+
+### Changed
+* change default value of `tbm_filter_merge_check` from `false` to `true` for more intuitive behavior with filtered change detection
+
+### Documentation
+* complete comprehensive README.md with detailed configuration, examples, and best practices
+
+### Testing
+* add integration test models for all incremental strategies (delete+insert, merge, insert_overwrite)
+* add YAML schema files for integration test models
+* add incremental run step to CI workflow for proper incremental logic testing
+
 ## 0.5.2 - (2026-01-08)
 
 ### Testing
