@@ -86,7 +86,7 @@ The package uses a custom `tbm_incremental` materialization and doesn't override
 
 ### ⚠️ Important: Using `is_incremental()` with Custom Materializations
 
-**Warning:** The standard dbt `is_incremental()` function does not recognize custom incremental materializations as incremental. 
+**Warning:** The standard dbt `is_incremental()` function does not recognize custom incremental materializations as incremental.
 
 **Solution:** Use `tbmacro.tbmacro_is_incremental()` instead of `is_incremental()` in your model SQL when working with `tbm_incremental` materialization.
 
@@ -201,7 +201,7 @@ The `tbm_filter_mode` parameter is key to controlling behavior of incremental st
 
 - **`values`**: Filters based on a list of unique value combinations from columns specified in `tbm_filter_key`. The filter list is built from distinct combinations of key column values in the source data.
 
-- **`range`**: Filters based on a range between lower boundary (`tbm_filter_from`) and upper boundary (`tbm_filter_till`). 
+- **`range`**: Filters based on a range between lower boundary (`tbm_filter_from`) and upper boundary (`tbm_filter_till`).
   - For composite keys, boundaries are compared as text
   - You can specify only one boundary (either `tbm_filter_from` or `tbm_filter_till`)
 
