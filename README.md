@@ -412,6 +412,15 @@ Result after the second run:
 
 Everything happens as it would with default `insert_overwrite` with `partition_by='created_date'` (pinpoint updates by dates), but physically the operation is performed at the `partition_month` partition level. Thanks to `optimizeWrite`, the entire updated dataset for the partition is written to one optimized file instead of multiple small files.
 
+**Important note about partition overwrite behavior:**
+
+The parameter `spark.sql.sources.partitionOverwriteMode = DYNAMIC` is set automatically **only when the table is found in the metastore**. This is critical for external tables where old Delta files may exist at the location while the metastore has no record of the table:
+
+- **Table in metastore**: DYNAMIC mode is enabled, only affected partitions are overwritten
+- **Table not in metastore**: DYNAMIC mode is NOT set, preventing old data with different partition values from appearing in the newly created table
+
+This behavior ensures data integrity when working with external tables and existing Delta files.
+
 #### Example 2: Using range mode for boundary-based filtering
 
 **Solution with range mode:**
