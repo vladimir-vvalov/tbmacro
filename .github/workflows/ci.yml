@@ -34,7 +34,12 @@ jobs:
       - name: Install dbt and dependencies
         run: |
           pip install --upgrade pip
-          pip install dbt-core==${{ matrix.dbt-version }} "dbt-spark[PyHive]==${{ matrix.dbt-version }}" pyspark delta-spark
+          pip install dbt-core==${{ matrix.dbt-version }} "dbt-spark[PyHive]==${{ matrix.dbt-version }}" pyspark==3.5.0 delta-spark==3.2.0
+
+      - name: Set up Spark with Delta Lake
+        run: |
+          echo "SPARK_VERSION=3.5" >> $GITHUB_ENV
+          echo "PYSPARK_SUBMIT_ARGS=--packages io.delta:delta-spark_2.12:3.2.0 pyspark-shell" >> $GITHUB_ENV
 
       - name: Install package dependencies
         run: |
