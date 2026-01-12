@@ -17,6 +17,3 @@ clean-targets:
 models:
   integration_tests:
     +file_format: delta
-    +enabled: false
-    example_delete_insert_1:
-      +enabled: true
