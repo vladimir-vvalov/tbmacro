@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file.
 * add integration test models for all incremental strategies (delete+insert, merge, insert_overwrite)
 * add YAML schema files for integration test models
 * add incremental run step to CI workflow for proper incremental logic testing
+* fix CI environment configuration: add Delta Lake support and in-memory catalog for Spark session
 
 ## 0.5.2 - (2026-01-08)
 
