@@ -6,13 +6,13 @@ models:
     columns:
       - name: id
         description: "id"
-        data_type: integer
+        data_type: int
         constraints:
           - type: not_null
 
       - name: value
         description: "value"
-        data_type: integer
+        data_type: int
 
       - name: created_date
         description: "created_date"
@@ -22,7 +22,7 @@ models:
 
       - name: partition_month
         description: "partition_month"
-        data_type: integer
+        data_type: int
         constraints:
           - type: not_null
 
