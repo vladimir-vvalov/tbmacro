@@ -1,7 +1,6 @@
 -- Test custom tbm_incremental merge with delete operator and check changes
 {{ config(
     materialized='tbm_incremental',
-    file_format='delta',
     incremental_strategy='merge',
     tbm_contract=true,
     unique_key=['id','created_date'],

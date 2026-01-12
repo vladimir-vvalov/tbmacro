@@ -1,7 +1,6 @@
 -- Test custom tbm_incremental insert_overwrite with 'values' mode
 {{ config(
     materialized='tbm_incremental',
-    file_format='delta',
     incremental_strategy='insert_overwrite',
     tbm_contract=true,
     partition_by='partition_month',

@@ -1,7 +1,6 @@
 -- Test custom tbm_incremental delete+insert with 'values' mode
 {{ config(
     materialized='tbm_incremental',
-    file_format='delta',
     incremental_strategy='delete+insert',
     partition_by='partition_month',
     tbm_filter_mode='values',

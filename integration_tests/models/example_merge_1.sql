@@ -1,7 +1,6 @@
 -- Test custom tbm_incremental merge with 'values' mode
 {{ config(
     materialized='tbm_incremental',
-    file_format='delta',
     incremental_strategy='merge',
     unique_key='id',
     tbm_filter_mode='values',
