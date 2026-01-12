@@ -23,7 +23,7 @@
     {%- set from = config.get('tbm_filter_from', none) or none -%}
     {%- set till = config.get('tbm_filter_till', none) or none -%}
     {%- set quote_values = config.get('tbm_filter_quote_values') or true -%}
-    {%- set merge_check = config.get('tbm_filter_merge_check') or false -%}
+    {%- set merge_check = config.get('tbm_filter_merge_check') or true -%}
 
     {#-- tbm merge --#}
     {%- set update_changes_only = config.get('tbm_update_changes_only') or false -%}

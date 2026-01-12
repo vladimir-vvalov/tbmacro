@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        dbt-version: ['1.8.*', '1.9.*', '1.10.*']
+        dbt-version: ['1.8.*','1.9.*','1.10.*']
 
     steps:
       - name: Checkout code
@@ -34,7 +34,12 @@ jobs:
       - name: Install dbt and dependencies
         run: |
           pip install --upgrade pip
-          pip install dbt-core==${{ matrix.dbt-version }} "dbt-spark[PyHive]==${{ matrix.dbt-version }}" pyspark
+          pip install dbt-core==${{ matrix.dbt-version }} dbt-spark==${{ matrix.dbt-version }} pyspark==3.5.0 delta-spark==3.2.0
+
+      - name: Set up Spark with Delta Lake
+        run: |
+          echo "SPARK_VERSION=3.5" >> $GITHUB_ENV
+          echo "PYSPARK_SUBMIT_ARGS=--packages io.delta:delta-spark_2.12:3.2.0 --conf spark.sql.catalogImplementation=in-memory --conf spark.sql.extensions=io.delta.sql.DeltaSparkSessionExtension --conf spark.sql.catalog.spark_catalog=org.apache.spark.sql.delta.catalog.DeltaCatalog pyspark-shell" >> $GITHUB_ENV
 
       - name: Install package dependencies
         run: |
@@ -46,7 +51,12 @@ jobs:
           cd integration_tests
           dbt parse --target ci
 
-      - name: Run integration tests
+      - name: Run integration tests - initial run
+        run: |
+          cd integration_tests
+          dbt build --target ci --debug
+
+      - name: Run integration tests - incremental run
         run: |
           cd integration_tests
           dbt build --target ci --debug
