@@ -7,6 +7,7 @@ integration_tests:
       schema: integration_tests
       host: localhost
       spark_config:
+        spark.sql.catalogImplementation: in-memory
         spark.jars.packages: io.delta:delta-spark_2.12:3.2.0
         spark.sql.extensions: io.delta.sql.DeltaSparkSessionExtension
         spark.sql.catalog.spark_catalog: org.apache.spark.sql.delta.catalog.DeltaCatalog
