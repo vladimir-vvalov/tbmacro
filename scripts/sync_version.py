@@ -1,4 +1,4 @@
-# Manual script to sync version in dbt_project.yml and README.md with CHANGELOG.md 
+# Manual script to sync version in dbt_project.yml and README.md with CHANGELOG.md
 import re
 from pathlib import Path
 
