@@ -102,24 +102,24 @@ The package uses a custom `tbm_incremental` materialization and doesn't override
 
 Add one of the following to your `packages.yml`:
 
-**Option 1: Git repository**
+**Option 1: Git repository (recommended)**
 ```yaml
 packages:
-  - git: "https://github.com/yourusername/tbmacro.git"
-    revision: v0.5.2
+  - git: "https://github.com/vladimir-vvalov/tbmacro.git"
+    revision: v1.0.0
 ```
 
 **Option 2: Tarball**
 ```yaml
 packages:
-  - tarball: https://github.com/vladimir-vvalov/tbmacro/archive/refs/tags/0.5.2.tar.gz
+  - tarball: https://github.com/vladimir-vvalov/tbmacro/archive/refs/tags/v1.0.0.tar.gz
     name: 'tbmacro'
 ```
 
 Then run:
 
 ```bash
-dbt deps --upgrade  # --upgrade is optional, updates package-lock.yml
+dbt deps
 ```
 
 ## ⚙️ Configuration
@@ -810,11 +810,12 @@ models:
 
 ## 📋 Requirements
 
-- **dbt**: >= 1.8.0, < 2.0.0
-- **Apache Spark**: Compatible with dbt-spark adapter
-- **File format**: Delta Lake only (required)
+**Version requirements:**
+- **dbt:** >=1.8.0, <2.0.0
+- **Adapter:** dbt-spark
+- **File format:** Delta Lake only (required)
 
-### Compatibility
+**Package compatibility:**
 
 The package uses a custom `tbm_incremental` materialization and **does not override** any default dbt macros or materializations. It can safely coexist with:
 

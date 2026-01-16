@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.0 - (2026-01-16)
+
+### Release
+* Official 1.0.0 release after 1.5 years of production use
+* Battle-tested on hundreds of models in production since version 0.4.6
+* Added comprehensive documentation and integration tests
+* Added CI/CD pipeline with automated testing
+* Ready for publication on dbt Hub
+
+### Summary of Features
+* Advanced filtering for incremental strategies (delete+insert, merge, insert_overwrite)
+* Schema contract with upfront table creation and NOT NULL constraints
+* Enhanced merge strategies with change-only updates
+* Flexible partition usage with advanced filtering capabilities
+* Bug prevention for Spark manifest inconsistencies
+* Custom `tbmacro_is_incremental()` macro for custom materializations
+* Non-conflicting design - works alongside standard dbt materializations
+
 ## 0.5.3 - (2026-01-12)
 
 ### Feature
