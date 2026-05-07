@@ -48,7 +48,7 @@
 {%- if values_list is none or not values_list -%}
       {%- set is_empty = true -%}
     {%- else -%}
-    {%- set sql -%}}
+    {%- set sql -%}
     and {{ key }} in (
       {%- for item in values_list -%}
       {{ tbmacro.tbmacro_quote(item, tbm_config.quote_values) }}{{ "," if not loop.last }}

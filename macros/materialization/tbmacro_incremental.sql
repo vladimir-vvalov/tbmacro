@@ -102,7 +102,7 @@
     {#-- Create secondary temporary view for union selection with out of range data if strategy == 'insert_overwrite' --#}
     {%- if strategy == 'insert_overwrite' and is_existing_relation == true and tbm_config.mode is not none and tbm_config.limit is none -%}
       {%- set filter_partition_by_dict = tbmacro.tbmacro_filter_partition_by(tmp_relation, tbm_config) -%}
-      {%- set filter_partition_by = filter_partition_by_dict.sql.value -%}
+      {%- set filter_partition_by = filter_partition_by_dict.sql -%}
       {%- set is_empty_partition_by = filter_partition_by_dict.is_empty -%}
 
       {#-- Check if selection is empty due to partition_by filter --#}

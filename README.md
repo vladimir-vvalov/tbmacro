@@ -106,7 +106,7 @@ Add one of the following to your `packages.yml`:
 ```yaml
 packages:
   - git: "https://github.com/vladimir-vvalov/tbmacro.git"
-    revision: v1.0.0
+    revision: v1.0.1
 ```
 
 **Option 2: Tarball**
