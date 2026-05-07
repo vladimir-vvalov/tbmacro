@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.0.1 - (2026-05-07)
+
+### Fix
+* Fixed `insert_overwrite` strategy silently overwriting all partitions instead of only affected ones when both `partition_by` and `tbm_filter_mode` are set (no data corruption, overwork only)
+
 ## 1.0.0 - (2026-01-16)
 
 ### Release
